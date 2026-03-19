@@ -1,0 +1,85 @@
+/* Slider Custom Styles */
+.slideshow-container {
+  position: relative;
+}
+
+.slideshow-container .slick-slider {
+  position: relative;
+}
+
+.slideshow-container .slick-dots {
+  bottom: 30px;
+  z-index: 10;
+}
+
+.slideshow-container .slick-dots li button:before {
+  font-size: 12px;
+  color: white;
+  opacity: 0.5;
+}
+
+.slideshow-container .slick-dots li.slick-active button:before {
+  color: #f59e0b;
+  opacity: 1;
+}
+
+.slideshow-container .slick-prev,
+.slideshow-container .slick-next {
+  z-index: 10;
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.slideshow-container .slick-prev:hover,
+.slideshow-container .slick-next:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.slideshow-container .slick-prev {
+  left: 30px;
+}
+
+.slideshow-container .slick-next {
+  right: 30px;
+}
+
+.slideshow-container .slick-prev:before,
+.slideshow-container .slick-next:before {
+  font-size: 30px;
+  color: white;
+  opacity: 1;
+}
+
+.slideshow-container .slick-prev:hover:before,
+.slideshow-container .slick-next:hover:before {
+  color: #f59e0b;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .slideshow-container .slick-prev,
+  .slideshow-container .slick-next {
+    width: 40px;
+    height: 40px;
+  }
+
+  .slideshow-container .slick-prev {
+    left: 15px;
+  }
+
+  .slideshow-container .slick-next {
+    right: 15px;
+  }
+
+  .slideshow-container .slick-prev:before,
+  .slideshow-container .slick-next:before {
+    font-size: 24px;
+  }
+
+  .slideshow-container .slick-dots {
+    bottom: 15px;
+  }
+}

@@ -26,7 +26,8 @@ export const router = createBrowserRouter([
     path: '/',
     Component: RootLayout,
     children: [
-      { index: true, Component: UserTypeSelection },
+      { index: true, Component: Home },
+      { path: 'select-user-type', Component: UserTypeSelection },
       { path: 'home', Component: Home },
       { path: 'products', Component: Products },
       { path: 'product/:id', Component: ProductDetail },
@@ -41,6 +42,7 @@ export const router = createBrowserRouter([
       { path: 'admin/add-product', Component: AdminAddProduct },
       { path: 'signup', Component: SignUp },
       { path: 'signin', Component: SignIn },
+      { path: 'login', Component: SignIn },
       { path: 'forgot-password', Component: ForgotPassword },
       { path: 'profile', Component: Profile },
       { path: 'debug/razorpay', Component: RazorpayDebug },

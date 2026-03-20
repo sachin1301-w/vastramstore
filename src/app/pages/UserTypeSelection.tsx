@@ -20,7 +20,7 @@ export function UserTypeSelection() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Customer/User Option */}
           <div 
-            onClick={() => navigate('/signin')}
+            onClick={() => navigate('/')}
             className="bg-white rounded-2xl shadow-2xl p-10 cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-3xl border-4 border-transparent hover:border-amber-500 group"
           >
             <div className="text-center">

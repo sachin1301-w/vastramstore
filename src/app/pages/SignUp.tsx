@@ -45,7 +45,7 @@ export function SignUp() {
 
     if (result.success) {
       toast.success('Account created successfully!');
-      navigate('/');
+      navigate('/home');
     } else {
       toast.error(result.error || 'Failed to create account');
     }

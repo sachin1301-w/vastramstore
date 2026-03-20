@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router';
+import { useParams, Link } from 'react-router';
 import { products } from '../data/products';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { ShoppingCart, ArrowLeft, Heart } from 'lucide-react';
@@ -12,8 +11,6 @@ export function ProductDetail() {
   const { id } = useParams();
   const product = products.find((p) => p.id === id);
   const { addToCart } = useCart();
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const [selectedSize, setSelectedSize] = useState<string>('');
 
   if (!product) {
@@ -30,18 +27,6 @@ export function ProductDetail() {
   }
 
   const handleAddToCart = () => {
-    // Check if user is logged in first
-    if (!user) {
-      toast.error('Please login to add items to cart', {
-        duration: 4000,
-        action: {
-          label: 'Login',
-          onClick: () => navigate('/login')
-        }
-      });
-      return;
-    }
-
     if (product.sizes.length > 0 && !selectedSize) {
       toast.error('Please select a size');
       return;

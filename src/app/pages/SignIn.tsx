@@ -32,7 +32,7 @@ export function SignIn() {
 
     if (result.success) {
       toast.success('Signed in successfully!');
-      navigate('/');
+      navigate('/home');
     } else {
       toast.error(result.error || 'Failed to sign in');
     }

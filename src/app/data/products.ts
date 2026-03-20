@@ -34,352 +34,369 @@ export interface Product {
 }
 
 export const products: Product[] = [
- {
-  "id": "1773907996913-cs2bybh",
-  "name": "saree",
-  "description": "children saree",
-  "price": 500,
-  "originalPrice": 900,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/5bd3e225-eaf1-485e-ad32-2910eeb633a3.jpeg",
+  {
+    id: '18',
+    name: 'KAASHVI JENIKA Red Ethnic Suit',
+    description: 'Gorgeous red ethnic suit from KAASHVI JENIKA collection with exquisite embroidery work. Features elegant V-neck design with intricate threadwork and sequin embellishments. Complete 3-piece set includes beautifully crafted kurta with embroidered sleeves, matching bottom, and dupatta. Premium fabric with comfortable fit. Perfect for festivals, weddings, parties, and traditional celebrations.',
+    price: 754,
+    originalPrice: 3999,
+    image: jenikaImg,
+    images: [
+      jenikaImg,
+    ],
+    category: 'Dresses',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '19',
+    name: 'KAASHVI JENIKA Chocolate Brown Ethnic Suit',
+    description: 'Elegant chocolate brown ethnic suit from KAASHVI JENIKA collection with sophisticated pinstripe embroidery. Features classic V-neck design with delicate threadwork and floral embellishments. Complete 3-piece set includes beautifully tailored kurta with embroidered details, matching bottom, and dupatta. Premium quality fabric with comfortable fit. Perfect for casual gatherings, festivals, office parties, and traditional celebrations.',
+    price: 754,
+    originalPrice: 2999,
+    image: jenikaBrownImg,
+    images: [
+      jenikaBrownImg,
+    ],
+    category: 'Dresses',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '20',
+    name: 'KAASHVI JENIKA Dark Brown Ethnic Suit',
+    description: 'Stylish dark brown ethnic suit from KAASHVI JENIKA collection with intricate embroidery and embellishments. Features elegant V-neck design with delicate threadwork and floral embroidery. Complete 3-piece set includes beautifully crafted kurta with embroidered sleeves, matching bottom, and dupatta. Premium fabric with comfortable fit. Perfect for festivals, weddings, parties, and traditional celebrations.',
+    price: 754,
+    originalPrice: 2999,
+    image: jenikaBrown2Img,
+    images: [
+      jenikaBrown2Img,
+    ],
+    category: 'Dresses',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '21',
+    name: 'KAASHVI JENIKA Grisha Ethnic Suit',
+    description: 'Stylish Grisha ethnic suit from KAASHVI JENIKA collection with intricate embroidery and embellishments. Features elegant V-neck design with delicate threadwork and floral embroidery. Complete 3-piece set includes beautifully crafted kurta with embroidered sleeves, matching bottom, and dupatta. Premium fabric with comfortable fit. Perfect for festivals, weddings, parties, and traditional celebrations.',
+    price: 754,
+    originalPrice: 2999,
+    image: jenikaGrishaImg,
+    images: [
+      jenikaGrishaImg,
+    ],
+    category: 'Dresses',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '22',
+    name: 'KAASHVI JENIKA Grisha Teal Ethnic Suit',
+    description: 'Stylish Grisha teal ethnic suit from KAASHVI JENIKA collection with intricate embroidery and embellishments. Features elegant V-neck design with delicate threadwork and floral embroidery. Complete 3-piece set includes beautifully crafted kurta with embroidered sleeves, matching bottom, and dupatta. Premium fabric with comfortable fit. Perfect for festivals, weddings, parties, and traditional celebrations.',
+    price: 754,
+    originalPrice: 2999,
+    image: jenikaGrishaTealImg,
+    images: [
+      jenikaGrishaTealImg,
+    ],
+    category: 'Dresses',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '23',
+    name: 'KAASHVI JENIKA Grisha Olive Ethnic Suit',
+    description: 'Stylish Grisha olive ethnic suit from KAASHVI JENIKA collection with intricate embroidery and embellishments. Features elegant V-neck design with delicate threadwork and floral embroidery. Complete 3-piece set includes beautifully crafted kurta with embroidered sleeves, matching bottom, and dupatta. Premium fabric with comfortable fit. Perfect for festivals, weddings, parties, and traditional celebrations.',
+    price: 754,
+    originalPrice: 2999,
+    image: jenikaGrishaOliveImg,
+    images: [
+      jenikaGrishaOliveImg,
+    ],
+    category: 'Dresses',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '24',
+    name: 'KAASHVI JENIKA Grisha Yellow Ethnic Suit',
+    description: 'Stylish Grisha yellow ethnic suit from KAASHVI JENIKA collection with intricate embroidery and embellishments. Features elegant V-neck design with delicate threadwork and floral embroidery. Complete 3-piece set includes beautifully crafted kurta with embroidered sleeves, matching bottom, and dupatta. Premium fabric with comfortable fit. Perfect for festivals, weddings, parties, and traditional celebrations.',
+    price: 754,
+    originalPrice: 2999,
+    image: jenikaGrishaYellowImg,
+    images: [
+      jenikaGrishaYellowImg,
+    ],
+    category: 'Dresses',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '25',
+    name: 'KAASHVI JENIKA Grisha Teal 2 Ethnic Suit',
+    description: 'Stylish Grisha teal 2 ethnic suit from KAASHVI JENIKA collection with intricate embroidery and embellishments. Features elegant V-neck design with delicate threadwork and floral embroidery. Complete 3-piece set includes beautifully crafted kurta with embroidered sleeves, matching bottom, and dupatta. Premium fabric with comfortable fit. Perfect for festivals, weddings, parties, and traditional celebrations.',
+    price: 754,
+    originalPrice: 2999,
+    image: jenikaGrishaTeal2Img,
+    images: [
+      jenikaGrishaTeal2Img,
+    ],
+    category: 'Dresses',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '26',
+    name: 'KAASHVI JENIKA Grisha Olive 2 Ethnic Suit',
+    description: 'Stylish Grisha olive 2 ethnic suit from KAASHVI JENIKA collection with intricate embroidery and embellishments. Features elegant V-neck design with delicate threadwork and floral embroidery. Complete 3-piece set includes beautifully crafted kurta with embroidered sleeves, matching bottom, and dupatta. Premium fabric with comfortable fit. Perfect for festivals, weddings, parties, and traditional celebrations.',
+    price: 754,
+    originalPrice: 2999,
+    image: jenikaGrishaOlive2Img,
+    images: [
+      jenikaGrishaOlive2Img,
+    ],
+    category: 'Dresses',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '27',
+    name: 'KAASHVI MAYA Pink Ethnic Suit',
+    description: 'Beautiful pink ethnic suit from KAASHVI MAYA collection with elegant white embroidery. Features classic V-neck design with delicate threadwork and floral embellishments on the chest. Complete 3-piece set includes beautifully crafted kurta with 3/4 sleeves, matching straight pants, and dupatta. Premium quality fabric with comfortable fit. Perfect for casual gatherings, festivals, office parties, and traditional celebrations.',
+    price: 754,
+    originalPrice: 2999,
+    image: mayaPinkImg,
+    images: [
+      mayaPinkImg,
+    ],
+    category: 'Dresses',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '28',
+    name: 'KAASHVI MAYA Lime Ethnic Suit',
+    description: 'Beautiful lime ethnic suit from KAASHVI MAYA collection with elegant white embroidery. Features classic V-neck design with delicate threadwork and floral embellishments on the chest. Complete 3-piece set includes beautifully crafted kurta with 3/4 sleeves, matching straight pants, and dupatta. Premium quality fabric with comfortable fit. Perfect for casual gatherings, festivals, office parties, and traditional celebrations.',
+    price: 754,
+    originalPrice: 2999,
+    image: mayaLimeImg,
+    images: [
+      mayaLimeImg,
+    ],
+    category: 'Dresses',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '29',
+    name: 'KAASHVI MAYA Mint Ethnic Suit',
+    description: 'Beautiful mint ethnic suit from KAASHVI MAYA collection with elegant white embroidery. Features classic V-neck design with delicate threadwork and floral embellishments on the chest. Complete 3-piece set includes beautifully crafted kurta with 3/4 sleeves, matching straight pants, and dupatta. Premium quality fabric with comfortable fit. Perfect for casual gatherings, festivals, office parties, and traditional celebrations.',
+    price: 754,
+    originalPrice: 2999,
+    image: mayaMintImg,
+    images: [
+      mayaMintImg,
+    ],
+    category: 'Dresses',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '2',
+    name: 'Casual Comfort Shirt',
+    description: 'Lightweight and breathable casual shirt. Perfect for everyday wear with a modern fit.',
+    price: 49.99,
+    image: 'https://images.unsplash.com/photo-1651083567132-355325837b74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXN1YWwlMjBzaGlydCUyMGZhc2hpb258ZW58MXx8fHwxNzczMjA4MTc4fDA&ixlib=rb-4.1.0&q=80&w=1080',
+    images: [
+      'https://images.unsplash.com/photo-1651083567132-355325837b74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXN1YWwlMjBzaGlydCUyMGZhc2hpb258ZW58MXx8fHwxNzczMjA4MTc4fDA&ixlib=rb-4.1.0&q=80&w=1080',
+    ],
+    category: 'Shirts',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+  },
+  {
+    id: '4',
+    name: 'Winter Puffer Jacket',
+    description: 'Warm and stylish winter jacket with premium insulation. Water-resistant and windproof.',
+    price: 149.99,
+    image: 'https://images.unsplash.com/photo-1706765779494-2705542ebe74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aW50ZXIlMjBqYWNrZXQlMjBmYXNoaW9ufGVufDF8fHx8MTc3MzIzMjExOHww&ixlib=rb-4.1.0&q=80&w=1080',
+    images: [
+      'https://images.unsplash.com/photo-1706765779494-2705542ebe74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aW50ZXIlMjBqYWNrZXQlMjBmYXNoaW9ufGVufDF8fHx8MTc3MzIzMjExOHww&ixlib=rb-4.1.0&q=80&w=1080',
+    ],
+    category: 'Outerwear',
+    sizes: ['M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+  },
+  {
+    id: '5',
+    name: 'Designer Handbag',
+    description: 'Luxury designer handbag with premium leather finish. Spacious interior with multiple compartments.',
+    price: 299.99,
+    originalPrice: 499.99,
+    image: 'https://images.unsplash.com/photo-1758171692659-024183c2c272?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZXNpZ25lciUyMGhhbmRiYWclMjBsdXh1cnl8ZW58MXx8fHwxNzczMTU1OTc1fDA&ixlib=rb-4.1.0&q=80&w=1080',
+    images: [
+      'https://images.unsplash.com/photo-1758171692659-024183c2c272?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZXNpZ25lciUyMGhhbmRiYWclMjBsdXh1cnl8ZW58MXx8fHwxNzczMTU1OTc1fDA&ixlib=rb-4.1.0&q=80&w=1080',
+    ],
+    category: 'Accessories',
+    sizes: ['One Size'],
+    inStock: true,
+    badge: 'SALE',
+  },
+  {
+    id: '8',
+    name: 'Classic Denim Jeans',
+    description: 'Timeless denim jeans with a perfect fit. Durable and comfortable for everyday wear.',
+    price: 69.99,
+    image: 'https://images.unsplash.com/photo-1579664531470-ac357f8f8e2b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYXNoaW9uJTIwY2xvdGhpbmclMjBzdG9yZSUyMHByb2R1Y3RzfGVufDF8fHx8MTc3MzIyNDgyM3ww&ixlib=rb-4.1.0&q=80&w=1080',
+    images: [
+      'https://images.unsplash.com/photo-1579664531470-ac357f8f8e2b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYXNoaW9uJTIwY2xvdGhpbmclMjBzdG9yZSUyMHByb2R1Y3RzfGVufDF8fHx8MTc3MzIyNDgyM3ww&ixlib=rb-4.1.0&q=80&w=1080',
+    ],
+    category: 'Bottoms',
+    sizes: ['28', '30', '32', '34', '36'],
+    inStock: true,
+  },
+  {
+    id: '30',
+    name: 'MIDNIGHT MOOD Sleeveless T-Shirt',
+    description: 'Stylish white sleeveless t-shirt with bold "MIDNIGHT MOOD" graphic print and artistic design elements. Features modern typography with geometric patterns and eye-catching graphics. Premium quality cotton fabric for all-day comfort. Perfect for casual outings, gym wear, summer style, and streetwear fashion. Comfortable sleeveless design ideal for warm weather.',
+    price: 400,
+    originalPrice: 799,
+    image: midnightMoodImg,
+    images: [
+      midnightMoodImg,
+    ],
+    category: 'T-Shirts',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '31',
+    name: 'SOUTO Sleeveless T-Shirt',
+    description: 'Stylish brown sleeveless t-shirt with bold "SOUTO" neon graphic print and artistic design elements. Features modern typography with geometric patterns and eye-catching graphics. Premium quality cotton fabric for all-day comfort. Perfect for casual outings, gym wear, summer style, and streetwear fashion. Comfortable sleeveless design ideal for warm weather.',
+    price: 400,
+    originalPrice: 799,
+    image: soutoImg,
+    images: [
+      soutoImg,
+    ],
+    category: 'T-Shirts',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '32',
+    name: 'RITUAL Sleeveless T-Shirt',
+    description: 'Stylish teal blue-green sleeveless t-shirt with bold "RITUAL" graphic print and "TREE WITHOUT BLOSSOMS" text. Features modern typography with artistic geometric patterns and eye-catching graphics. Premium quality cotton fabric for all-day comfort. Perfect for casual outings, gym wear, summer style, and streetwear fashion. Comfortable sleeveless design ideal for warm weather.',
+    price: 400,
+    originalPrice: 799,
+    image: ritualImg,
+    images: [
+      ritualImg,
+    ],
+    category: 'T-Shirts',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '33',
+    name: 'EQUALIZE Sleeveless T-Shirt',
+    description: 'Stylish rust terracotta sleeveless t-shirt with elegant "Equalize Freedom Original" embossed text and artistic graphic design patch. Features modern typography with geometric patterns and eye-catching graphics. Premium quality cotton fabric for all-day comfort. Perfect for casual outings, gym wear, summer style, and streetwear fashion. Comfortable sleeveless design ideal for warm weather.',
+    price: 400,
+    originalPrice: 799,
+    image: equalizeImg,
+    images: [
+      equalizeImg,
+    ],
+    category: 'T-Shirts',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '34',
+    name: 'NOIRACENT Sleeveless T-Shirt',
+    description: 'Stylish black sleeveless t-shirt with bold "NOIRACENT" graphic print and artistic design elements. Features modern typography with geometric patterns and eye-catching graphics. Premium quality cotton fabric for all-day comfort. Perfect for casual outings, gym wear, summer style, and streetwear fashion. Comfortable sleeveless design ideal for warm weather.',
+    price: 400,
+    originalPrice: 799,
+    image: noiracentImg,
+    images: [
+      noiracentImg,
+    ],
+    category: 'T-Shirts',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+    id: '35',
+    name: 'VIXY Sleeveless T-Shirt',
+    description: 'Stylish black sleeveless t-shirt with bold "VIXY" graphic print and artistic design elements. Features modern typography with geometric patterns and eye-catching graphics. Premium quality cotton fabric for all-day comfort. Perfect for casual outings, gym wear, summer style, and streetwear fashion. Comfortable sleeveless design ideal for warm weather.',
+    price: 400,
+    originalPrice: 799,
+    image: vixyImg,
+    images: [
+      vixyImg,
+    ],
+    category: 'T-Shirts',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    inStock: true,
+    featured: true,
+    badge: 'NEW',
+  },
+  {
+  "id": "1773859395242-v3fz72o",
+  "name": "KAASHVI JENIKA Red Ethnic Suit",
+  "description": "Dresses\nGorgeous red ethnic suit from KAASHVI JENIKA collection with exquisite embroidery work. Features elegant V-neck design with intricate threadwork and sequin embellishments. Complete 3-piece set includes beautifully crafted kurta with embroidered sleeves, matching bottom, and dupatta. Premium fabric with comfortable fit. Perfect for festivals, weddings, parties, and traditional celebrations.",
+  "price": 1000.01,
+  "originalPrice": 2000,
+  "image": "https://yelling-emerald-hcszhyuxdt.edgeone.app/0cb50fcbd05fb70c1b3e5c22fa422bae2a72fd2b.png",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/5bd3e225-eaf1-485e-ad32-2910eeb633a3.jpeg"
+    "https://yelling-emerald-hcszhyuxdt.edgeone.app/0cb50fcbd05fb70c1b3e5c22fa422bae2a72fd2b.png"
   ],
-  "category": "Sarees",
+  "category": "Outerwear",
   "sizes": [
-    "S",
     "XS",
+    "S",
+    "L",
     "M"
   ],
   "inStock": true,
-  "featured": false,
-  "badge": "NEW"
-},
-{
-  "id": "1773908240440-4nouaqu",
-  "name": "Tshirt",
-  "description": "GYM tshirt",
-  "price": 300,
-  "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/e0502cd7-70ec-4c4c-b687-d1d8e6c4c3e9.jpeg",
-  "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/e0502cd7-70ec-4c4c-b687-d1d8e6c4c3e9.jpeg"
-  ],
-  "category": "T-Shirts",
-  "sizes": [
-    "S",
-    "M",
-    "L",
-    "XL"
-  ],
-  "inStock": true,
-  "featured": false
-},
-{
-  "id": "1773908314401-73dmtwe",
-  "name": "Tshirt",
-  "description": "GYM tshirt",
-  "price": 300,
-  "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/045503c6-2f6e-421f-862a-9d1bd1679aca.jpeg",
-  "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/045503c6-2f6e-421f-862a-9d1bd1679aca.jpeg"
-  ],
-  "category": "T-Shirts",
-  "sizes": [
-    "S",
-    "M",
-    "L",
-    "XL"
-  ],
-  "inStock": true,
-  "featured": false
-},
-{
-  "id": "1773908358089-brvqoe8",
-  "name": "Tshirt",
-  "description": "GYM tshirt",
-  "price": 300,
-  "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/d9f42717-c7ba-4ca8-acce-bbc93d007f12.jpeg",
-  "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/d9f42717-c7ba-4ca8-acce-bbc93d007f12.jpeg"
-  ],
-  "category": "T-Shirts",
-  "sizes": [
-    "S",
-    "M",
-    "L",
-    "XL"
-  ],
-  "inStock": true,
-  "featured": false
-},
-{
-  "id": "1773908382764-fdmm7on",
-  "name": "Tshirt",
-  "description": "GYM tshirt",
-  "price": 300,
-  "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/5be95769-d468-4c97-b32d-67383485d0e5.jpeg",
-  "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/5be95769-d468-4c97-b32d-67383485d0e5.jpeg"
-  ],
-  "category": "T-Shirts",
-  "sizes": [
-    "S",
-    "M",
-    "L",
-    "XL"
-  ],
-  "inStock": true,
-  "featured": false
-},
-{
-  "id": "1773908403377-6aj0h3o",
-  "name": "Tshirt",
-  "description": "GYM tshirt",
-  "price": 300,
-  "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/398cdb44-0fd0-458a-9bb2-044741ed0b54.jpeg",
-  "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/398cdb44-0fd0-458a-9bb2-044741ed0b54.jpeg"
-  ],
-  "category": "T-Shirts",
-  "sizes": [
-    "S",
-    "M",
-    "L",
-    "XL"
-  ],
-  "inStock": true,
-  "featured": false
-},
-{
-  "id": "1773908439440-dpcnwvt",
-  "name": "Tshirt",
-  "description": "GYM tshirt",
-  "price": 300,
-  "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/d08858fd-c8a1-4f07-be4c-98e7dac91284.jpeg",
-  "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/d08858fd-c8a1-4f07-be4c-98e7dac91284.jpeg"
-  ],
-  "category": "T-Shirts",
-  "sizes": [
-    "S",
-    "M",
-    "L",
-    "XL"
-  ],
-  "inStock": true,
-  "featured": false
-},
-
-
-{
-  "id": "1773908466737-lrjy8xm",
-  "name": "Tshirt",
-  "description": "GYM tshirt",
-  "price": 300,
-  "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/95e57f60-d26d-446c-8b17-a9d2b0f7c23f.jpeg",
-  "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/95e57f60-d26d-446c-8b17-a9d2b0f7c23f.jpeg"
-  ],
-  "category": "T-Shirts",
-  "sizes": [
-    "S",
-    "M",
-    "L",
-    "XL"
-  ],
-  "inStock": true,
-  "featured": false
-},
-{
-  "id": "1773908736655-ax3eppy",
-  "name": "Tshirt",
-  "description": "GYM tshirt",
-  "price": 300,
-  "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/27fe83bd-1eb0-4724-b066-9e702f707b38.jpeg",
-  "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/27fe83bd-1eb0-4724-b066-9e702f707b38.jpeg"
-  ],
-  "category": "T-Shirts",
-  "sizes": [
-    "S",
-    "M",
-    "L",
-    "XL"
-  ],
-  "inStock": true,
-  "featured": false
-},
-{
-  "id": "1773909832907-yvu4yuh",
-  "name": "Suit",
-  "description": "Ladies suit",
-  "price": 745,
-  "originalPrice": 800,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/054eac95-dfd7-43e7-aa61-fafdd03b6459.jpeg",
-  "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/054eac95-dfd7-43e7-aa61-fafdd03b6459.jpeg",
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/0cd4f57f-8df0-4e22-846a-cb1afe2ba337.jpeg"
-  ],
-  "category": "Dresses",
-  "sizes": [
-    "M",
-    "L",
-    "XL"
-  ],
-  "inStock": true,
-  "featured": false,
-  "badge": "NEW"
-},
-{
-  "id": "1773909870275-pvw0zf2",
-  "name": "Suit",
-  "description": "Ladies suit",
-  "price": 745,
-  "originalPrice": 800,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/168847c7-d453-48c1-b95a-1203755e3eff.jpeg",
-  "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/168847c7-d453-48c1-b95a-1203755e3eff.jpeg",
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/df5f4f4b-1ac5-48dd-b036-e7d046224524.jpeg"
-  ],
-  "category": "Dresses",
-  "sizes": [
-    "M",
-    "L",
-    "XL"
-  ],
-  "inStock": true,
-  "featured": false,
-  "badge": "NEW"
-},
-{
-  "id": "1773909905077-g7p5k1d",
-  "name": "Suit",
-  "description": "Ladies suit",
-  "price": 745,
-  "originalPrice": 800,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/b72e96fd-e1be-473e-9624-0efae8d168b2.jpeg",
-  "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/b72e96fd-e1be-473e-9624-0efae8d168b2.jpeg"
-  ],
-  "category": "Dresses",
-  "sizes": [
-    "M",
-    "L",
-    "XL"
-  ],
-  "inStock": true,
-  "featured": false,
-  "badge": "NEW"
-},
-{
-  "id": "1773909959688-uhuwc9q",
-  "name": "Suit",
-  "description": "Ladies suit",
-  "price": 745,
-  "originalPrice": 800,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/8ba9ce57-1540-406f-b435-24b9fdc18e1f.jpeg",
-  "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/8ba9ce57-1540-406f-b435-24b9fdc18e1f.jpeg",
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/f29436f6-922e-4dba-8df8-c40a3f6ae3a7.jpeg"
-  ],
-  "category": "Dresses",
-  "sizes": [
-    "M",
-    "L",
-    "XL"
-  ],
-  "inStock": true,
-  "featured": false,
-  "badge": "NEW"
-},
-{
-  "id": "1773909991006-iwm31oa",
-  "name": "Suit",
-  "description": "Ladies suit",
-  "price": 745,
-  "originalPrice": 800,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/9b946ded-4367-46f9-b97b-57a57b659b31.jpeg",
-  "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/9b946ded-4367-46f9-b97b-57a57b659b31.jpeg"
-  ],
-  "category": "Dresses",
-  "sizes": [
-    "M",
-    "L",
-    "XL"
-  ],
-  "inStock": true,
-  "featured": false,
-  "badge": "NEW"
-},
-{
-  "id": "1773910043322-yo158ub",
-  "name": "Suit",
-  "description": "Ladies suit",
-  "price": 745,
-  "originalPrice": 800,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/9144e4d7-2b87-46cb-bbb0-25f284fcb19a.jpeg",
-  "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/9144e4d7-2b87-46cb-bbb0-25f284fcb19a.jpeg",
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/6b6c752e-f140-4914-b220-8ee399b85030.jpeg"
-  ],
-  "category": "Dresses",
-  "sizes": [
-    "M",
-    "L",
-    "XL"
-  ],
-  "inStock": true,
-  "featured": false,
-  "badge": "NEW"
-},
-{
-  "id": "1773910090372-r443b1y",
-  "name": "Suit",
-  "description": "Ladies suit",
-  "price": 745,
-  "originalPrice": 800,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/02fb5154-ba13-440b-a695-792111ce1b14.jpeg",
-  "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/02fb5154-ba13-440b-a695-792111ce1b14.jpeg",
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/6b6c752e-f140-4914-b220-8ee399b85030.jpeg"
-  ],
-  "category": "Dresses",
-  "sizes": [
-    "M",
-    "L",
-    "XL"
-  ],
-  "inStock": true,
-  "featured": false,
-  "badge": "NEW"
-},
-{
-  "id": "1773910132586-8q775xd",
-  "name": "Suit",
-  "description": "Ladies suit",
-  "price": 745,
-  "originalPrice": 800,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/0e994f24-4120-4e99-ae95-a87b1b721ee3.jpeg",
-  "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/0e994f24-4120-4e99-ae95-a87b1b721ee3.jpeg",
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/83db1028-642f-439c-8d2a-443a335c1940.jpeg"
-  ],
-  "category": "Dresses",
-  "sizes": [
-    "M",
-    "L",
-    "XL"
-  ],
-  "inStock": true,
-  "featured": false,
+  "featured": true,
   "badge": "NEW"
 }
 ];

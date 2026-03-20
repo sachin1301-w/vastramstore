@@ -17,7 +17,7 @@ export function Header() {
   const navigate = useNavigate();
 
   const navigation = [
-    { name: 'Home', href: '/', icon: Home },
+    { name: 'Home', href: '/home', icon: Home },
     { name: 'Products', href: '/products', icon: Package },
     { name: 'About', href: '/about', icon: Info },
     { name: 'Contact', href: '/contact', icon: Mail },
@@ -33,10 +33,10 @@ export function Header() {
   };
 
   // Don't show header on user type selection or admin pages
-  const isUserTypeSelection = location.pathname === '/select-user-type';
+  const isUserTypeSelection = location.pathname === '/';
   const isAdminPage = location.pathname.startsWith('/admin');
   
-  if (isAdminPage || isUserTypeSelection) {
+  if (isUserTypeSelection || isAdminPage) {
     return null;
   }
 
@@ -46,7 +46,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link 
-            to="/" 
+            to="/home" 
             className="flex items-center group"
           >
             <span className="text-2xl font-bold tracking-wide bg-gradient-to-r from-orange-700 via-amber-600 to-orange-700 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300 drop-shadow-lg">
@@ -95,7 +95,7 @@ export function Header() {
               </Link>
             ) : (
               <Link
-                to="/login"
+                to="/"
                 className="p-2.5 hover:bg-amber-50 hover:text-amber-700 rounded-full transition-all duration-200 group"
                 title="Sign In"
               >

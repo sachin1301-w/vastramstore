@@ -668,11 +668,15 @@ app.post("/make-server-e222e178/payment/verify", async (c) => {
 
     // Store order in KV store
     await kv.set(`order:${orderId}`, order);
-    
+
     // Add to orders list for easy retrieval
     const ordersList = await kv.get("orders:list") || [];
     ordersList.push(orderId);
     await kv.set("orders:list", ordersList);
+
+    // Decrease stock for ordered items
+    const stockResults = await decreaseStock(orderData.items);
+    console.log('Stock updated:', stockResults);
 
     console.log(`✅ Payment verified and order created: ${orderId} - Status: PROCESSING (payment confirmed)`);
 
@@ -681,17 +685,17 @@ app.post("/make-server-e222e178/payment/verify", async (c) => {
     const customerPhone = order.customerInfo.phone;
     const orderTotal = order.total;
 
-      // Format phone number to include +91 if not already present
-      const formattedCustomerPhone = customerPhone.startsWith('+') ? customerPhone : `+91${customerPhone}`;
-      const ownerPhone = '+917387618655';
+    // Format phone number to include +91 if not already present
+    const formattedCustomerPhone = customerPhone.startsWith('+') ? customerPhone : `+91${customerPhone}`;
+    const ownerPhone = '+917387618655';
 
-      // Send SMS to customer
-      const customerMessage = `Dear ${order.customerInfo.firstName}, your order ${orderId} has been placed successfully! Thank you for shopping with VASTRAM. Track your order at vastram.com`;
-      await sendSMS(formattedCustomerPhone, customerMessage);
+    // Send SMS to customer
+    const customerMessage = `Dear ${order.customerInfo.firstName}, your order ${orderId} has been placed successfully! Thank you for shopping with VASTRAM. Track your order at vastram.com`;
+    await sendSMS(formattedCustomerPhone, customerMessage);
 
-      // Send SMS to owner
-      const ownerMessage = `New order received! Customer: ${customerName} (${customerPhone}) has placed an order of ₹${orderTotal}. Order ID: ${orderId}`;
-      await sendSMS(ownerPhone, ownerMessage);
+    // Send SMS to owner
+    const ownerMessage = `New order received! Customer: ${customerName} (${customerPhone}) has placed an order of ₹${orderTotal}. Order ID: ${orderId}`;
+    await sendSMS(ownerPhone, ownerMessage);
 
     // Send email notifications after successful payment
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
@@ -935,11 +939,15 @@ app.post("/make-server-e222e178/orders/create-without-payment", async (c) => {
 
     // Store order in KV store
     await kv.set(`order:${orderId}`, order);
-    
+
     // Add to orders list for easy retrieval
     const ordersList = await kv.get("orders:list") || [];
     ordersList.push(orderId);
     await kv.set("orders:list", ordersList);
+
+    // Decrease stock for ordered items
+    const stockResults = await decreaseStock(items);
+    console.log('Stock updated:', stockResults);
 
     console.log(`Order created successfully: ${orderId} - Status: PROCESSING (no payment gateway configured)`);
     
@@ -1361,5 +1369,132 @@ app.get("/make-server-e222e178/orders/export/csv", async (c) => {
     return c.json({ error: `Failed to export orders: ${error.message}` }, 500);
   }
 });
+
+// Stock Management Endpoints
+
+// Sync stock from product catalog (initializes stock from products.ts)
+app.post("/make-server-e222e178/stock/sync", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { products } = body;
+
+    if (!products || !Array.isArray(products)) {
+      return c.json({ error: "Products array is required" }, 400);
+    }
+
+    let syncedCount = 0;
+
+    for (const product of products) {
+      if (product.stock !== undefined) {
+        // Only sync if stock doesn't exist yet, or if force sync is requested
+        const existingStock = await kv.get(`stock:${product.id}`);
+        if (existingStock === null || existingStock === undefined) {
+          await kv.set(`stock:${product.id}`, product.stock);
+          syncedCount++;
+        }
+      }
+    }
+
+    console.log(`Synced stock for ${syncedCount} products`);
+    return c.json({
+      success: true,
+      message: `Stock synced for ${syncedCount} products`,
+      count: syncedCount
+    });
+  } catch (error) {
+    console.error("Error syncing stock:", error);
+    return c.json({ error: `Failed to sync stock: ${error.message}` }, 500);
+  }
+});
+
+// Get all stock information
+app.get("/make-server-e222e178/stock", async (c) => {
+  try {
+    // Query Supabase directly since getByPrefix doesn't return keys
+    const { data, error } = await supabase
+      .from("kv_store_e222e178")
+      .select("key, value")
+      .like("key", "stock:%");
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const stockMap: Record<string, number> = {};
+
+    if (data) {
+      for (const item of data) {
+        const productId = item.key.replace("stock:", "");
+        stockMap[productId] = item.value;
+      }
+    }
+
+    return c.json({ success: true, stock: stockMap });
+  } catch (error) {
+    console.error("Error fetching stock:", error);
+    return c.json({ error: `Failed to fetch stock: ${error.message}` }, 500);
+  }
+});
+
+// Get stock for a specific product
+app.get("/make-server-e222e178/stock/:productId", async (c) => {
+  try {
+    const productId = c.req.param("productId");
+    const stock = await kv.get(`stock:${productId}`);
+
+    if (stock === null || stock === undefined) {
+      return c.json({ success: true, stock: 0 });
+    }
+
+    return c.json({ success: true, stock });
+  } catch (error) {
+    console.error("Error fetching product stock:", error);
+    return c.json({ error: `Failed to fetch product stock: ${error.message}` }, 500);
+  }
+});
+
+// Update stock for a specific product (admin use)
+app.put("/make-server-e222e178/stock/:productId", async (c) => {
+  try {
+    const productId = c.req.param("productId");
+    const body = await c.req.json();
+    const { stock } = body;
+
+    if (stock === null || stock === undefined || stock < 0) {
+      return c.json({ error: "Valid stock value is required (must be >= 0)" }, 400);
+    }
+
+    await kv.set(`stock:${productId}`, stock);
+    console.log(`Stock updated for product ${productId}: ${stock}`);
+
+    return c.json({ success: true, productId, stock });
+  } catch (error) {
+    console.error("Error updating product stock:", error);
+    return c.json({ error: `Failed to update product stock: ${error.message}` }, 500);
+  }
+});
+
+// Decrease stock (used when order is placed)
+async function decreaseStock(items: any[]) {
+  const results = [];
+
+  for (const item of items) {
+    const currentStock = await kv.get(`stock:${item.id}`) || 0;
+    const newStock = Math.max(0, currentStock - item.quantity);
+    await kv.set(`stock:${item.id}`, newStock);
+
+    results.push({
+      productId: item.id,
+      productName: item.name,
+      previousStock: currentStock,
+      newStock,
+      quantityPurchased: item.quantity
+    });
+
+    console.log(`Stock decreased for ${item.name} (${item.id}): ${currentStock} -> ${newStock}`);
+  }
+
+  return results;
+}
 
 Deno.serve(app.fetch);

@@ -4,12 +4,21 @@ import { Product } from '../data/products';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { motion } from 'motion/react';
+import { useContext } from 'react';
+import { StockContext } from '../context/StockContext';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const stockContext = useContext(StockContext);
+
+  // Use context stock if available, otherwise fall back to product's initial stock
+  const stock = stockContext
+    ? stockContext.getStock(product.id)
+    : (product.stock ?? 10);
+
   return (
     <Link to={`/product/${product.id}`} className="group">
       <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
@@ -32,10 +41,23 @@ export function ProductCard({ product }: ProductCardProps) {
               </Badge>
             </motion.div>
           )}
+          {stock <= 0 && (
+            <Badge className="absolute top-3 right-3 bg-red-600 hover:bg-red-700">
+              OUT OF STOCK
+            </Badge>
+          )}
+          {stock > 0 && stock <= 5 && (
+            <Badge className="absolute top-3 right-3 bg-orange-600 hover:bg-orange-700">
+              Only {stock} left
+            </Badge>
+          )}
         </div>
         <div className="p-4">
           <h3 className="mb-2 line-clamp-1">{product.name}</h3>
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">{product.description}</p>
+          <p className="text-sm text-gray-600 mb-2 line-clamp-2">{product.description}</p>
+          <p className="text-xs text-gray-500 mb-3">
+            {stock > 0 ? `Stock: ${stock} units` : 'Out of stock'}
+          </p>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <motion.span

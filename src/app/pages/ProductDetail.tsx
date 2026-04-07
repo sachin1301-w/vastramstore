@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router';
 import { products } from '../data/products';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { StockContext } from '../context/StockContext';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { ShoppingCart, ArrowLeft, Heart } from 'lucide-react';
@@ -13,8 +14,14 @@ export function ProductDetail() {
   const product = products.find((p) => p.id === id);
   const { addToCart } = useCart();
   const { user } = useAuth();
+  const stockContext = useContext(StockContext);
   const navigate = useNavigate();
   const [selectedSize, setSelectedSize] = useState<string>('');
+
+  // Use context stock if available, otherwise fall back to product's initial stock
+  const stock = product
+    ? (stockContext ? stockContext.getStock(product.id) : (product.stock ?? 10))
+    : 0;
 
   if (!product) {
     return (
@@ -39,6 +46,12 @@ export function ProductDetail() {
           onClick: () => navigate('/login')
         }
       });
+      return;
+    }
+
+    // Check stock availability
+    if (stock <= 0) {
+      toast.error('This product is out of stock');
       return;
     }
 
@@ -129,10 +142,15 @@ export function ProductDetail() {
 
             {/* Stock Status */}
             <div className="mb-6">
-              {product.inStock ? (
-                <p className="text-green-600">In Stock</p>
+              {stock > 0 ? (
+                <div>
+                  <p className="text-green-600 font-medium">In Stock: {stock} units available</p>
+                  {stock <= 5 && (
+                    <p className="text-orange-600 text-sm mt-1">Only {stock} left - Order soon!</p>
+                  )}
+                </div>
               ) : (
-                <p className="text-red-600">Out of Stock</p>
+                <p className="text-red-600 font-medium">Out of Stock</p>
               )}
             </div>
 
@@ -142,10 +160,10 @@ export function ProductDetail() {
                 size="lg"
                 className="flex-1 bg-amber-700 hover:bg-amber-800"
                 onClick={handleAddToCart}
-                disabled={!product.inStock}
+                disabled={stock <= 0}
               >
                 <ShoppingCart className="w-5 h-5 mr-2" />
-                Add to Cart
+                {stock > 0 ? 'Add to Cart' : 'Out of Stock'}
               </Button>
               <Button size="lg" variant="outline">
                 <Heart className="w-5 h-5" />

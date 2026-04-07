@@ -29,6 +29,7 @@ export interface Product {
   category: string;
   sizes: string[];
   inStock: boolean;
+  stock?: number;
   featured?: boolean;
   badge?: string;
 }
@@ -51,6 +52,7 @@ export const products: Product[] = [
     "M"
   ],
   "inStock": true,
+  "stock": 15,
   "featured": false,
   "badge": "NEW"
 },
@@ -72,6 +74,7 @@ export const products: Product[] = [
     "XL"
   ],
   "inStock": true,
+  "stock": 20,
   "featured": false
 },
 {
@@ -92,6 +95,7 @@ export const products: Product[] = [
     "XL"
   ],
   "inStock": true,
+  "stock": 18,
   "featured": false
 },
 {
@@ -112,6 +116,7 @@ export const products: Product[] = [
     "XL"
   ],
   "inStock": true,
+  "stock": 12,
   "featured": false
 },
 {
@@ -132,6 +137,7 @@ export const products: Product[] = [
     "XL"
   ],
   "inStock": true,
+  "stock": 25,
   "featured": false
 },
 {
@@ -152,6 +158,7 @@ export const products: Product[] = [
     "XL"
   ],
   "inStock": true,
+  "stock": 10,
   "featured": false
 },
 {
@@ -172,6 +179,7 @@ export const products: Product[] = [
     "XL"
   ],
   "inStock": true,
+  "stock": 14,
   "featured": false
 },
 
@@ -194,6 +202,7 @@ export const products: Product[] = [
     "XL"
   ],
   "inStock": true,
+  "stock": 8,
   "featured": false
 },
 {
@@ -214,6 +223,7 @@ export const products: Product[] = [
     "XL"
   ],
   "inStock": true,
+  "stock": 22,
   "featured": false
 },
 {
@@ -234,6 +244,7 @@ export const products: Product[] = [
     "XL"
   ],
   "inStock": true,
+  "stock": 7,
   "featured": false,
   "badge": "NEW"
 },
@@ -255,6 +266,7 @@ export const products: Product[] = [
     "XL"
   ],
   "inStock": true,
+  "stock": 13,
   "featured": false,
   "badge": "NEW"
 },
@@ -275,6 +287,7 @@ export const products: Product[] = [
     "XL"
   ],
   "inStock": true,
+  "stock": 16,
   "featured": false,
   "badge": "NEW"
 },
@@ -296,6 +309,7 @@ export const products: Product[] = [
     "XL"
   ],
   "inStock": true,
+  "stock": 9,
   "featured": false,
   "badge": "NEW"
 },
@@ -316,6 +330,7 @@ export const products: Product[] = [
     "XL"
   ],
   "inStock": true,
+  "stock": 11,
   "featured": false,
   "badge": "NEW"
 },
@@ -337,6 +352,7 @@ export const products: Product[] = [
     "XL"
   ],
   "inStock": true,
+  "stock": 19,
   "featured": false,
   "badge": "NEW"
 },
@@ -358,6 +374,7 @@ export const products: Product[] = [
     "XL"
   ],
   "inStock": true,
+  "stock": 6,
   "featured": false,
   "badge": "NEW"
 },
@@ -379,6 +396,7 @@ export const products: Product[] = [
     "XL"
   ],
   "inStock": true,
+  "stock": 17,
   "featured": false,
   "badge": "NEW"
 }

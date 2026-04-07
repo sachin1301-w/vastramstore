@@ -27,7 +27,7 @@ export const router = createBrowserRouter([
     Component: RootLayout,
     children: [
       { index: true, Component: Home },
-      { path: 'login', Component: UserTypeSelection }, // Login button now shows Customer/Admin selection
+      { path: 'login', Component: UserTypeSelection },
       { path: 'select-user-type', Component: UserTypeSelection },
       { path: 'home', Component: Home },
       { path: 'products', Component: Products },

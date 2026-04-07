@@ -47,7 +47,7 @@ export function Cart() {
                     <p className="text-sm text-gray-600 mb-2">Size: {item.size}</p>
                   )}
                   <p className="mb-3">₹{item.price.toFixed(2)}</p>
-                  
+
                   <div className="flex items-center gap-3">
                     <div className="flex items-center border rounded-md">
                       <button

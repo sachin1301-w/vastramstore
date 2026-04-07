@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useStock } from '../context/StockContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -21,6 +22,7 @@ export function Checkout() {
   const navigate = useNavigate();
   const { items, getTotalPrice, clearCart } = useCart();
   const { user } = useAuth();
+  const { getStock } = useStock();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [razorpayKeyId, setRazorpayKeyId] = useState<string>('');
@@ -319,19 +321,34 @@ export function Checkout() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || 
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone ||
         !formData.address || !formData.city || !formData.state || !formData.zipCode) {
       toast.error('Please fill in all fields');
       return;
     }
 
+    // Validate stock for all items in cart
+    const outOfStockItems = items.filter(item => {
+      const stock = getStock(item.id);
+      return stock < item.quantity;
+    });
+
+    if (outOfStockItems.length > 0) {
+      const itemNames = outOfStockItems.map(item => item.name).join(', ');
+      toast.error(`Some items are out of stock: ${itemNames}`, {
+        duration: 5000,
+        description: 'Please remove out-of-stock items from your cart and try again.'
+      });
+      return;
+    }
+
     setIsSubmitting(true);
-    
+
     try {
       const total = getTotalPrice();
-      
+
       // Generate temporary order ID
       const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 

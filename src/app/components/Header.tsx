@@ -1,10 +1,9 @@
-import { Link, useLocation } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Search, Menu, User, LogIn, Home, Package, Info, Mail, X, UserPlus } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
-import { useNavigate } from 'react-router';
 import { Button } from './ui/button';
 
 export function Header() {

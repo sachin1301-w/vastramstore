@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
 import { Product } from '../data/products';
 import { Button } from './ui/button';

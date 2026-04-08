@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router-dom';
 import { products, categories } from '../data/products';
 import { ProductCard } from '../components/ProductCard';
 import { Button } from '../components/ui/button';

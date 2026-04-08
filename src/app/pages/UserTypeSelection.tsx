@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { ShoppingBag, Shield, User } from 'lucide-react';
 

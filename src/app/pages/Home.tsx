@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import { Button } from '../components/ui/button';
 import { products } from '../data/products';

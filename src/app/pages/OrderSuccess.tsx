@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router';
+import { useSearchParams, Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { CheckCircle, Package, Truck, MapPin, Clock } from 'lucide-react';
 import { projectId, publicAnonKey } from '/utils/supabase/info';

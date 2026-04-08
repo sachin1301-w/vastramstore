@@ -1,5 +1,5 @@
 import { Heart, Sparkles, TrendingUp, Shield, Package, Star } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 export function About() {
   return (

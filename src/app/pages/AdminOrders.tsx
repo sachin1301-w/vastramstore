@@ -14,6 +14,7 @@ interface Order {
     price: number;
     quantity: number;
     size?: string;
+    image?: string;
   }>;
   customerInfo: {
     firstName: string;
@@ -374,26 +375,43 @@ export function AdminOrders() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
-                  <div>
-                    <h4 className="font-medium mb-2">Items</h4>
-                    <div className="space-y-1">
-                      {order.items.map((item, index) => (
-                        <p key={index} className="text-sm text-gray-700">
-                          {item.name} {item.size && `(${item.size})`} x{item.quantity} - ₹{(item.price * item.quantity).toFixed(2)}
-                        </p>
-                      ))}
-                    </div>
+                <div className="mb-4">
+                  <h4 className="font-medium mb-3">Order Items</h4>
+                  <div className="space-y-3">
+                    {order.items.map((item, index) => (
+                      <div key={index} className="flex items-center gap-4 bg-gray-50 rounded-lg p-3">
+                        {item.image && (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-20 h-20 object-cover rounded-md flex-shrink-0"
+                            onError={(e) => {
+                              e.currentTarget.src = 'https://via.placeholder.com/80?text=No+Image';
+                            }}
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900 truncate">{item.name}</p>
+                          <p className="text-sm text-gray-600">
+                            {item.size && <span className="mr-2">Size: {item.size}</span>}
+                            <span>Qty: {item.quantity}</span>
+                          </p>
+                          <p className="text-sm font-semibold text-amber-700 mt-1">
+                            ₹{item.price.toFixed(2)} × {item.quantity} = ₹{(item.price * item.quantity).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
+                </div>
 
-                  <div>
-                    <h4 className="font-medium mb-2">Shipping Address</h4>
-                    <p className="text-sm text-gray-700">{order.customerInfo.address}</p>
-                    <p className="text-sm text-gray-700">
-                      {order.customerInfo.city}, {order.customerInfo.state} {order.customerInfo.zipCode}
-                    </p>
-                    <p className="text-sm text-gray-700 mt-1">{order.customerInfo.phone}</p>
-                  </div>
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-2">Shipping Address</h4>
+                  <p className="text-sm text-gray-700">{order.customerInfo.address}</p>
+                  <p className="text-sm text-gray-700">
+                    {order.customerInfo.city}, {order.customerInfo.state} {order.customerInfo.zipCode}
+                  </p>
+                  <p className="text-sm text-gray-700 mt-1">{order.customerInfo.phone}</p>
                 </div>
 
                 {order.trackingNumber && (

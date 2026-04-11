@@ -798,9 +798,98 @@ app.post("/make-server-e222e178/payment/verify", async (c) => {
 
           const customerEmailData = await customerEmailResponse.json();
           if (!customerEmailResponse.ok) {
-            console.error('Failed to send payment confirmation email:', customerEmailData);
+            console.error('Failed to send admin payment confirmation email:', customerEmailData);
           } else {
-            console.log(`✅ Payment confirmation email sent to vastram.pune2026@gmail.com`);
+            console.log(`✅ Admin payment confirmation email sent to vastram.pune2026@gmail.com`);
+          }
+
+          // Send order confirmation email to customer
+          const customerConfirmationResponse = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${resendApiKey}`,
+            },
+            body: JSON.stringify({
+              from: 'VASTRAM <onboarding@resend.dev>',
+              to: customerInfo.email,
+              subject: `Order Confirmation - ${orderId} - VASTRAM`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+                  <div style="background: linear-gradient(to right, #f59e0b, #d97706); padding: 30px; text-align: center;">
+                    <h1 style="color: #ffffff; margin: 0; font-size: 32px;">🎉 Order Confirmed!</h1>
+                    <p style="color: #fef3c7; margin: 10px 0 0 0;">Thank you for shopping with VASTRAM</p>
+                  </div>
+
+                  <div style="padding: 30px; background-color: #fffbeb;">
+                    <h2 style="color: #92400e; margin-top: 0;">Hello ${customerInfo.firstName}!</h2>
+                    <p style="font-size: 16px; color: #374151;">
+                      Thank you for your order! We're excited to get your items to you. Your order has been confirmed and will be processed shortly.
+                    </p>
+
+                    <div style="background-color: #ffffff; border: 2px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 8px;">
+                      <p style="margin: 0; color: #6b7280; font-size: 14px;">Order ID</p>
+                      <p style="margin: 5px 0 0 0; color: #92400e; font-size: 20px; font-weight: bold; font-family: monospace;">${orderId}</p>
+                    </div>
+
+                    <div style="background-color: #fef3c7; border: 2px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 8px; text-align: center;">
+                      <p style="margin: 0; color: #92400e; font-size: 14px;">Order Total</p>
+                      <p style="margin: 5px 0 0 0; color: #d97706; font-size: 32px; font-weight: bold;">₹${total.toFixed(2)}</p>
+                    </div>
+                  </div>
+
+                  <div style="padding: 30px;">
+                    <h3 style="color: #92400e; border-bottom: 2px solid #f59e0b; padding-bottom: 10px;">Order Items</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                      <thead>
+                        <tr style="background-color: #fef3c7;">
+                          <th style="padding: 10px; text-align: left; color: #92400e;">Product</th>
+                          <th style="padding: 10px; text-align: center; color: #92400e;">Qty</th>
+                          <th style="padding: 10px; text-align: right; color: #92400e;">Price</th>
+                          <th style="padding: 10px; text-align: right; color: #92400e;">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${itemsListHTML}
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan="3" style="padding: 15px 10px; text-align: right; font-weight: bold; font-size: 18px;">Grand Total:</td>
+                          <td style="padding: 15px 10px; text-align: right; font-weight: bold; font-size: 18px; color: #d97706;">₹${total.toFixed(2)}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+
+                    <h3 style="color: #92400e; border-bottom: 2px solid #f59e0b; padding-bottom: 10px; margin-top: 30px;">Shipping Address</h3>
+                    <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                      <p style="margin: 5px 0; color: #92400e;"><strong>📍 Delivery To:</strong></p>
+                      <p style="margin: 5px 0; color: #78350f;">${customerInfo.firstName} ${customerInfo.lastName}</p>
+                      <p style="margin: 5px 0; color: #78350f;">${customerInfo.address}</p>
+                      <p style="margin: 5px 0; color: #78350f;">${customerInfo.city}, ${customerInfo.state} ${customerInfo.zipCode}</p>
+                      <p style="margin: 5px 0; color: #78350f;">📱 ${customerInfo.phone}</p>
+                    </div>
+
+                    <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0;">
+                      <p style="margin: 0; color: #1e3a8a;"><strong>📦 What's Next?</strong></p>
+                      <p style="margin: 5px 0 0 0; color: #1e40af;">We'll send you a tracking number once your order ships. You can track your order status in your profile.</p>
+                    </div>
+                  </div>
+
+                  <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 3px solid #f59e0b;">
+                    <p style="color: #d97706; font-weight: bold; margin: 0 0 10px 0;">VASTRAM</p>
+                    <p style="color: #6b7280; font-size: 12px; margin: 5px 0;">Thank you for shopping with us!</p>
+                    <p style="color: #6b7280; font-size: 12px; margin: 5px 0;">Questions? Contact us at vastram.pune2026@gmail.com</p>
+                  </div>
+                </div>
+              `,
+            }),
+          });
+
+          const customerConfirmationData = await customerConfirmationResponse.json();
+          if (!customerConfirmationResponse.ok) {
+            console.error('Failed to send customer order confirmation email:', customerConfirmationData);
+          } else {
+            console.log(`✅ Customer order confirmation email sent to ${customerInfo.email}`);
           }
 
       } catch (emailError) {
@@ -878,6 +967,192 @@ app.post("/make-server-e222e178/orders/create-without-payment", async (c) => {
     // Send SMS to owner
     const ownerMessage = `New order received! Customer: ${customerName} (${customerPhone}) has placed an order of ₹${orderTotal}. Order ID: ${orderId}`;
     await sendSMS(ownerPhone, ownerMessage);
+
+    // Send email notifications
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+
+    if (resendApiKey) {
+      try {
+        const itemsListHTML = items.map((item: any) => `
+          <tr>
+            <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${item.name}${item.size ? ` (${item.size})` : ''}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: center;">${item.quantity}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: right;">₹${item.price.toFixed(2)}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: bold;">₹${(item.price * item.quantity).toFixed(2)}</td>
+          </tr>
+        `).join('');
+
+        // Send email to admin
+        const adminEmailResponse = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${resendApiKey}`,
+          },
+          body: JSON.stringify({
+            from: 'VASTRAM <onboarding@resend.dev>',
+            to: 'vastram.pune2026@gmail.com',
+            subject: `📦 New Order - ${orderId} - ₹${total.toFixed(2)}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+                <div style="background: linear-gradient(to right, #3b82f6, #2563eb); padding: 30px; text-align: center;">
+                  <h1 style="color: #ffffff; margin: 0; font-size: 32px;">📦 NEW ORDER</h1>
+                  <p style="color: #dbeafe; margin: 10px 0 0 0;">VASTRAM Admin</p>
+                </div>
+
+                <div style="padding: 30px; background-color: #eff6ff; border: 3px solid #3b82f6;">
+                  <h2 style="color: #1e3a8a; margin-top: 0;">New Order Received!</h2>
+
+                  <div style="background-color: #ffffff; border: 2px solid #3b82f6; padding: 15px; margin: 20px 0; border-radius: 8px;">
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">Order ID</p>
+                    <p style="margin: 5px 0 0 0; color: #1e3a8a; font-size: 20px; font-weight: bold; font-family: monospace;">${orderId}</p>
+                  </div>
+
+                  <div style="background-color: #dbeafe; border: 2px solid #3b82f6; padding: 15px; margin: 20px 0; border-radius: 8px; text-align: center;">
+                    <p style="margin: 0; color: #1e3a8a; font-size: 14px;">Order Total</p>
+                    <p style="margin: 5px 0 0 0; color: #2563eb; font-size: 32px; font-weight: bold;">₹${total.toFixed(2)}</p>
+                  </div>
+                </div>
+
+                <div style="padding: 30px;">
+                  <h3 style="color: #1e3a8a; border-bottom: 2px solid #3b82f6; padding-bottom: 10px;">Customer Information</h3>
+                  <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 5px 0; color: #92400e;"><strong>👤 Name:</strong> ${customerInfo.firstName} ${customerInfo.lastName}</p>
+                    <p style="margin: 5px 0; color: #92400e;"><strong>📧 Email:</strong> ${customerInfo.email}</p>
+                    <p style="margin: 5px 0; color: #92400e;"><strong>📱 Phone:</strong> ${customerInfo.phone}</p>
+                    <p style="margin: 5px 0; color: #92400e;"><strong>📍 Address:</strong> ${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state} ${customerInfo.zipCode}</p>
+                  </div>
+
+                  <h3 style="color: #1e3a8a; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; margin-top: 30px;">Order Items</h3>
+                  <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                    <thead>
+                      <tr style="background-color: #dbeafe;">
+                        <th style="padding: 10px; text-align: left; color: #1e3a8a;">Product</th>
+                        <th style="padding: 10px; text-align: center; color: #1e3a8a;">Qty</th>
+                        <th style="padding: 10px; text-align: right; color: #1e3a8a;">Price</th>
+                        <th style="padding: 10px; text-align: right; color: #1e3a8a;">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${itemsListHTML}
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colspan="3" style="padding: 15px 10px; text-align: right; font-weight: bold; font-size: 18px;">Grand Total:</td>
+                        <td style="padding: 15px 10px; text-align: right; font-weight: bold; font-size: 18px; color: #2563eb;">₹${total.toFixed(2)}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+
+                  <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;">
+                    <p style="margin: 0; color: #92400e;"><strong>⚡ Action Required</strong></p>
+                    <p style="margin: 5px 0 0 0; color: #92400e;">Process this order and update tracking info.</p>
+                  </div>
+                </div>
+
+                <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 3px solid #3b82f6;">
+                  <p style="color: #2563eb; font-weight: bold; margin: 0 0 10px 0;">VASTRAM Admin System</p>
+                  <p style="color: #6b7280; font-size: 12px; margin: 5px 0;">Automated order notification</p>
+                </div>
+              </div>
+            `,
+          }),
+        });
+
+        if (adminEmailResponse.ok) {
+          console.log(`✅ Admin notification email sent to vastram.pune2026@gmail.com`);
+        }
+
+        // Send order confirmation email to customer
+        const customerEmailResponse = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${resendApiKey}`,
+          },
+          body: JSON.stringify({
+            from: 'VASTRAM <onboarding@resend.dev>',
+            to: customerInfo.email,
+            subject: `Order Confirmation - ${orderId} - VASTRAM`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+                <div style="background: linear-gradient(to right, #f59e0b, #d97706); padding: 30px; text-align: center;">
+                  <h1 style="color: #ffffff; margin: 0; font-size: 32px;">🎉 Order Confirmed!</h1>
+                  <p style="color: #fef3c7; margin: 10px 0 0 0;">Thank you for shopping with VASTRAM</p>
+                </div>
+
+                <div style="padding: 30px; background-color: #fffbeb;">
+                  <h2 style="color: #92400e; margin-top: 0;">Hello ${customerInfo.firstName}!</h2>
+                  <p style="font-size: 16px; color: #374151;">
+                    Thank you for your order! We're excited to get your items to you. Your order has been confirmed and will be processed shortly.
+                  </p>
+
+                  <div style="background-color: #ffffff; border: 2px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 8px;">
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">Order ID</p>
+                    <p style="margin: 5px 0 0 0; color: #92400e; font-size: 20px; font-weight: bold; font-family: monospace;">${orderId}</p>
+                  </div>
+
+                  <div style="background-color: #fef3c7; border: 2px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 8px; text-align: center;">
+                    <p style="margin: 0; color: #92400e; font-size: 14px;">Order Total</p>
+                    <p style="margin: 5px 0 0 0; color: #d97706; font-size: 32px; font-weight: bold;">₹${total.toFixed(2)}</p>
+                  </div>
+                </div>
+
+                <div style="padding: 30px;">
+                  <h3 style="color: #92400e; border-bottom: 2px solid #f59e0b; padding-bottom: 10px;">Order Items</h3>
+                  <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                    <thead>
+                      <tr style="background-color: #fef3c7;">
+                        <th style="padding: 10px; text-align: left; color: #92400e;">Product</th>
+                        <th style="padding: 10px; text-align: center; color: #92400e;">Qty</th>
+                        <th style="padding: 10px; text-align: right; color: #92400e;">Price</th>
+                        <th style="padding: 10px; text-align: right; color: #92400e;">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${itemsListHTML}
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colspan="3" style="padding: 15px 10px; text-align: right; font-weight: bold; font-size: 18px;">Grand Total:</td>
+                        <td style="padding: 15px 10px; text-align: right; font-weight: bold; font-size: 18px; color: #d97706;">₹${total.toFixed(2)}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+
+                  <h3 style="color: #92400e; border-bottom: 2px solid #f59e0b; padding-bottom: 10px; margin-top: 30px;">Shipping Address</h3>
+                  <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 5px 0; color: #92400e;"><strong>📍 Delivery To:</strong></p>
+                    <p style="margin: 5px 0; color: #78350f;">${customerInfo.firstName} ${customerInfo.lastName}</p>
+                    <p style="margin: 5px 0; color: #78350f;">${customerInfo.address}</p>
+                    <p style="margin: 5px 0; color: #78350f;">${customerInfo.city}, ${customerInfo.state} ${customerInfo.zipCode}</p>
+                    <p style="margin: 5px 0; color: #78350f;">📱 ${customerInfo.phone}</p>
+                  </div>
+
+                  <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0;">
+                    <p style="margin: 0; color: #1e3a8a;"><strong>📦 What's Next?</strong></p>
+                    <p style="margin: 5px 0 0 0; color: #1e40af;">We'll send you a tracking number once your order ships. You can track your order status in your profile.</p>
+                  </div>
+                </div>
+
+                <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 3px solid #f59e0b;">
+                  <p style="color: #d97706; font-weight: bold; margin: 0 0 10px 0;">VASTRAM</p>
+                  <p style="color: #6b7280; font-size: 12px; margin: 5px 0;">Thank you for shopping with us!</p>
+                  <p style="color: #6b7280; font-size: 12px; margin: 5px 0;">Questions? Contact us at vastram.pune2026@gmail.com</p>
+                </div>
+              </div>
+            `,
+          }),
+        });
+
+        if (customerEmailResponse.ok) {
+          console.log(`✅ Customer order confirmation email sent to ${customerInfo.email}`);
+        }
+
+      } catch (emailError) {
+        console.error('Error sending order confirmation emails:', emailError);
+      }
+    }
 
     return c.json({ success: true, orderId, order });
   } catch (error) {

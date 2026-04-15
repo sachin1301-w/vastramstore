@@ -23,7 +23,8 @@ import {
   Eye,
   X,
   Plus,
-  Trash2
+  Trash2,
+  Upload
 } from 'lucide-react';
 import { projectId, publicAnonKey } from '/utils/supabase/info';
 
@@ -476,6 +477,13 @@ export function AdminDashboard() {
               Add New Product
             </Button>
             <Button
+              onClick={() => navigate('/admin/migrate-images')}
+              className="bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-2"
+            >
+              <Upload className="w-4 h-4" />
+              Migrate Product Images
+            </Button>
+            <Button
               onClick={handleQuickReset}
               className="bg-red-600 hover:bg-red-700 flex items-center justify-center gap-2"
             >
@@ -744,12 +752,17 @@ export function AdminDashboard() {
                 <div className="space-y-2">
                   {viewOrderDetails.items.map((item, index) => (
                     <div key={index} className="bg-amber-50 rounded-lg p-4 flex justify-between items-center">
-                      <div>
+                      <div className="flex-1">
                         <p className="font-semibold text-gray-900">{item.name}</p>
                         <p className="text-sm text-gray-600">
                           {item.size && `Size: ${item.size} • `}
                           Unit Price: ₹{item.price.toFixed(2)} • Quantity: {item.quantity}
                         </p>
+                        {item.id && (
+                          <p className="text-xs text-gray-500 mt-1 font-mono">
+                            Product ID: {item.id}
+                          </p>
+                        )}
                       </div>
                       <p className="font-bold text-amber-700 text-lg">₹{(item.price * item.quantity).toFixed(2)}</p>
                     </div>

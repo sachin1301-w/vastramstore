@@ -56,7 +56,25 @@ export const products: Product[] = [
   "featured": false,
   "badge": "NEW"
 },
-
+{
+  "id": "1776966559135-9giw08u",
+  "name": "sarees",
+  "description": "sae",
+  "price": 500,
+  "originalPrice": 1500,
+  "image": "https://img.sanishtech.com/u/da6850686a037dbdc3c9459dba81aff7.jpeg",
+  "images": [
+    "https://img.sanishtech.com/u/da6850686a037dbdc3c9459dba81aff7.jpeg"
+  ],
+  "category": "Sarees",
+  "sizes": [
+    "S",
+    "M"
+  ],
+  "inStock": true,
+  "featured": false,
+  "badge": "SALE"
+}
 ];
 
 export const categories = [

@@ -378,6 +378,26 @@ export const products: Product[] = [
   "featured": false,
   "badge": "NEW"
 },
+  {
+  "id": "1776965697006-m11uu7u",
+  "name": "Saree",
+  "description": "Saree",
+  "price": 500,
+  "image": "https://kommodo.ai/i/ahWSKjIu7KcFLVhQg3QE",
+  "images": [
+    "https://kommodo.ai/i/ahWSKjIu7KcFLVhQg3QE"
+  ],
+  "category": "Sarees",
+  "sizes": [
+    "L",
+    "M",
+    "XS",
+    "S"
+  ],
+  "inStock": true,
+  "featured": false,
+  "badge": "SALE"
+},
 {
   "id": "1773910132586-8q775xd",
   "name": "Suit",

@@ -41,9 +41,9 @@ export const products: Product[] = [
   "description": "children saree",
   "price": 500,
   "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/5bd3e225-eaf1-485e-ad32-2910eeb633a3.jpeg",
+  "image": "https://juwtfhevkbfywawzzexn.supabase.co/storage/v1/object/public/make-e222e178-product-images/1773907996913-cs2bybh.jpeg",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/5bd3e225-eaf1-485e-ad32-2910eeb633a3.jpeg"
+    "https://juwtfhevkbfywawzzexn.supabase.co/storage/v1/object/public/make-e222e178-product-images/1773907996913-cs2bybh.jpeg"
   ],
   "category": "Sarees",
   "sizes": [
@@ -62,9 +62,9 @@ export const products: Product[] = [
   "description": "GYM tshirt",
   "price": 300,
   "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/e0502cd7-70ec-4c4c-b687-d1d8e6c4c3e9.jpeg",
+  "image": "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/e0502cd7-70ec-4c4c-b687-d1d8e6c4c3e9.jpeg"
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800"
   ],
   "category": "T-Shirts",
   "sizes": [
@@ -83,9 +83,9 @@ export const products: Product[] = [
   "description": "GYM tshirt",
   "price": 300,
   "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/045503c6-2f6e-421f-862a-9d1bd1679aca.jpeg",
+  "image": "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/045503c6-2f6e-421f-862a-9d1bd1679aca.jpeg"
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800"
   ],
   "category": "T-Shirts",
   "sizes": [
@@ -104,9 +104,9 @@ export const products: Product[] = [
   "description": "GYM tshirt",
   "price": 300,
   "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/d9f42717-c7ba-4ca8-acce-bbc93d007f12.jpeg",
+  "image": "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/d9f42717-c7ba-4ca8-acce-bbc93d007f12.jpeg"
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800"
   ],
   "category": "T-Shirts",
   "sizes": [
@@ -125,9 +125,9 @@ export const products: Product[] = [
   "description": "GYM tshirt",
   "price": 300,
   "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/5be95769-d468-4c97-b32d-67383485d0e5.jpeg",
+  "image": "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/5be95769-d468-4c97-b32d-67383485d0e5.jpeg"
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800"
   ],
   "category": "T-Shirts",
   "sizes": [
@@ -146,9 +146,9 @@ export const products: Product[] = [
   "description": "GYM tshirt",
   "price": 300,
   "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/398cdb44-0fd0-458a-9bb2-044741ed0b54.jpeg",
+  "image": "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/398cdb44-0fd0-458a-9bb2-044741ed0b54.jpeg"
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800"
   ],
   "category": "T-Shirts",
   "sizes": [
@@ -167,9 +167,9 @@ export const products: Product[] = [
   "description": "GYM tshirt",
   "price": 300,
   "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/d08858fd-c8a1-4f07-be4c-98e7dac91284.jpeg",
+  "image": "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/d08858fd-c8a1-4f07-be4c-98e7dac91284.jpeg"
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800"
   ],
   "category": "T-Shirts",
   "sizes": [
@@ -190,9 +190,9 @@ export const products: Product[] = [
   "description": "GYM tshirt",
   "price": 300,
   "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/95e57f60-d26d-446c-8b17-a9d2b0f7c23f.jpeg",
+  "image": "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/95e57f60-d26d-446c-8b17-a9d2b0f7c23f.jpeg"
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800"
   ],
   "category": "T-Shirts",
   "sizes": [
@@ -211,9 +211,9 @@ export const products: Product[] = [
   "description": "GYM tshirt",
   "price": 300,
   "originalPrice": 500,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/27fe83bd-1eb0-4724-b066-9e702f707b38.jpeg",
+  "image": "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/27fe83bd-1eb0-4724-b066-9e702f707b38.jpeg"
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800"
   ],
   "category": "T-Shirts",
   "sizes": [
@@ -232,10 +232,10 @@ export const products: Product[] = [
   "description": "Ladies suit",
   "price": 745,
   "originalPrice": 800,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/054eac95-dfd7-43e7-aa61-fafdd03b6459.jpeg",
+  "image": "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/054eac95-dfd7-43e7-aa61-fafdd03b6459.jpeg",
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/0cd4f57f-8df0-4e22-846a-cb1afe2ba337.jpeg"
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800"
   ],
   "category": "Dresses",
   "sizes": [
@@ -254,10 +254,10 @@ export const products: Product[] = [
   "description": "Ladies suit",
   "price": 745,
   "originalPrice": 800,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/168847c7-d453-48c1-b95a-1203755e3eff.jpeg",
+  "image": "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/168847c7-d453-48c1-b95a-1203755e3eff.jpeg",
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/df5f4f4b-1ac5-48dd-b036-e7d046224524.jpeg"
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800"
   ],
   "category": "Dresses",
   "sizes": [
@@ -276,9 +276,9 @@ export const products: Product[] = [
   "description": "Ladies suit",
   "price": 745,
   "originalPrice": 800,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/b72e96fd-e1be-473e-9624-0efae8d168b2.jpeg",
+  "image": "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/b72e96fd-e1be-473e-9624-0efae8d168b2.jpeg"
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800"
   ],
   "category": "Dresses",
   "sizes": [
@@ -297,10 +297,10 @@ export const products: Product[] = [
   "description": "Ladies suit",
   "price": 745,
   "originalPrice": 800,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/8ba9ce57-1540-406f-b435-24b9fdc18e1f.jpeg",
+  "image": "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/8ba9ce57-1540-406f-b435-24b9fdc18e1f.jpeg",
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/f29436f6-922e-4dba-8df8-c40a3f6ae3a7.jpeg"
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800"
   ],
   "category": "Dresses",
   "sizes": [
@@ -319,9 +319,9 @@ export const products: Product[] = [
   "description": "Ladies suit",
   "price": 745,
   "originalPrice": 800,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/9b946ded-4367-46f9-b97b-57a57b659b31.jpeg",
+  "image": "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/9b946ded-4367-46f9-b97b-57a57b659b31.jpeg"
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800"
   ],
   "category": "Dresses",
   "sizes": [
@@ -340,10 +340,10 @@ export const products: Product[] = [
   "description": "Ladies suit",
   "price": 745,
   "originalPrice": 800,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/9144e4d7-2b87-46cb-bbb0-25f284fcb19a.jpeg",
+  "image": "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/9144e4d7-2b87-46cb-bbb0-25f284fcb19a.jpeg",
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/6b6c752e-f140-4914-b220-8ee399b85030.jpeg"
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800"
   ],
   "category": "Dresses",
   "sizes": [
@@ -362,10 +362,10 @@ export const products: Product[] = [
   "description": "Ladies suit",
   "price": 745,
   "originalPrice": 800,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/02fb5154-ba13-440b-a695-792111ce1b14.jpeg",
+  "image": "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/02fb5154-ba13-440b-a695-792111ce1b14.jpeg",
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/6b6c752e-f140-4914-b220-8ee399b85030.jpeg"
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800"
   ],
   "category": "Dresses",
   "sizes": [
@@ -378,36 +378,16 @@ export const products: Product[] = [
   "featured": false,
   "badge": "NEW"
 },
-  {
-  "id": "1776965697006-m11uu7u",
-  "name": "Saree",
-  "description": "Saree",
-  "price": 500,
-  "image": "https://kommodo.ai/i/ahWSKjIu7KcFLVhQg3QE",
-  "images": [
-    "https://kommodo.ai/i/ahWSKjIu7KcFLVhQg3QE"
-  ],
-  "category": "Sarees",
-  "sizes": [
-    "L",
-    "M",
-    "XS",
-    "S"
-  ],
-  "inStock": true,
-  "featured": false,
-  "badge": "SALE"
-},
 {
   "id": "1773910132586-8q775xd",
   "name": "Suit",
   "description": "Ladies suit",
   "price": 745,
   "originalPrice": 800,
-  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/0e994f24-4120-4e99-ae95-a87b1b721ee3.jpeg",
+  "image": "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
   "images": [
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/0e994f24-4120-4e99-ae95-a87b1b721ee3.jpeg",
-    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/83db1028-642f-439c-8d2a-443a335c1940.jpeg"
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800",
+    "https://images.unsplash.com/photo-1599346821185-6860259a6db7?w=800"
   ],
   "category": "Dresses",
   "sizes": [

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '/utils/supabase/client';
+import { supabase } from '../../../utils/supabase/client';
 import { Button } from '../components/ui/button';
 import { Upload, CheckCircle, XCircle, Download, AlertCircle } from 'lucide-react';
 import { products } from '../data/products';

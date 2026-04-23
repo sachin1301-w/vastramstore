@@ -6,6 +6,7 @@ import { Badge } from './ui/badge';
 import { motion } from 'motion/react';
 import { useContext } from 'react';
 import { StockContext } from '../context/StockContext';
+import { ImageWithFallback } from './figma/ImageWithFallback';
 
 interface ProductCardProps {
   product: Product;
@@ -23,13 +24,17 @@ export function ProductCard({ product }: ProductCardProps) {
     <Link to={`/product/${product.id}`} className="group">
       <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
         <div className="relative aspect-square overflow-hidden bg-gray-100">
-          <motion.img
-            src={product.image}
-            alt={product.name}
-            className="w-full h-full object-cover"
+          <motion.div
             whileHover={{ scale: 1.1 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-          />
+            className="w-full h-full"
+          >
+            <ImageWithFallback
+              src={product.image}
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
+          </motion.div>
           {product.badge && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}

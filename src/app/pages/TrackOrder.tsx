@@ -4,7 +4,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Package, Truck, MapPin, CheckCircle, Search, Clock, Calendar, User, Phone, Mail, Sparkles, Box, Navigation } from 'lucide-react';
-import { projectId, publicAnonKey } from '/utils/supabase/info';
+import { projectId, publicAnonKey } from '../../../utils/supabase/info';
 import { motion } from 'motion/react';
 
 interface Order {

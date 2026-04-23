@@ -7,9 +7,10 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
-import { projectId, publicAnonKey } from '/utils/supabase/info';
+import { projectId, publicAnonKey } from '../../../utils/supabase/info';
 import { CreditCard, Smartphone, Wallet, ShieldCheck, Sparkles, MapPin, Mail, Phone, User } from 'lucide-react';
 import { motion } from 'motion/react';
+import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 
 // Declare Razorpay on window
 declare global {
@@ -659,7 +660,7 @@ export function Checkout() {
                       transition={{ delay: index * 0.1 }}
                       className="flex gap-4 p-3 bg-amber-50 rounded-lg border border-amber-100"
                     >
-                      <img
+                      <ImageWithFallback
                         src={item.image}
                         alt={item.name}
                         className="w-20 h-20 object-cover rounded-lg shadow-sm"

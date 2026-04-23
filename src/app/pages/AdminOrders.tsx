@@ -4,12 +4,13 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
 import { Download, Package, Truck, MapPin, RefreshCw, Database, Search, Trash2 } from 'lucide-react';
-import { projectId, publicAnonKey } from '/utils/supabase/info';
+import { projectId, publicAnonKey } from '../../../utils/supabase/info';
+import { products } from '../data/products';
 
 interface Order {
   orderId: string;
   items: Array<{
-    id: number;
+    id: string;  // Changed from number to string to match product IDs
     name: string;
     price: number;
     quantity: number;
@@ -49,6 +50,28 @@ export function AdminOrders() {
   const [status, setStatus] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+
+  // Helper function to get product image by ID
+  const getProductImage = (productId: string): string => {
+    console.log('Looking for product with ID:', productId);
+    const product = products.find(p => p.id === productId);
+    
+    if (product) {
+      console.log('Found product:', product.name, product.image);
+      
+      // Check if the image is from R2 storage - these don't work due to CORS
+      if (product.image.includes('r2.dev')) {
+        console.log('⚠️ R2 image detected - using fallback T-shirt image instead');
+        // Use a generic T-shirt image as fallback for R2 images
+        return 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop&q=80';
+      }
+      
+      return product.image;
+    }
+    
+    console.log('Product not found, using fallback image');
+    return 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=80&h=80&fit=crop';
+  };
 
   useEffect(() => {
     fetchOrders();
@@ -378,30 +401,34 @@ export function AdminOrders() {
                 <div className="mb-4">
                   <h4 className="font-medium mb-3">Order Items</h4>
                   <div className="space-y-3">
-                    {order.items.map((item, index) => (
-                      <div key={index} className="flex items-center gap-4 bg-gray-50 rounded-lg p-3">
-                        {item.image && (
+                    {order.items.map((item, index) => {
+                      // Get image from order item OR from products database
+                      const productImage = item.image || getProductImage(item.id);
+                      
+                      return (
+                        <div key={index} className="flex items-center gap-4 bg-gray-50 rounded-lg p-3">
                           <img
-                            src={item.image}
+                            src={productImage}
                             alt={item.name}
                             className="w-20 h-20 object-cover rounded-md flex-shrink-0"
                             onError={(e) => {
-                              e.currentTarget.src = 'https://via.placeholder.com/80?text=No+Image';
+                              console.error(`Failed to load image for ${item.name}:`, productImage);
+                              e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=80&h=80&fit=crop';
                             }}
                           />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate">{item.name}</p>
-                          <p className="text-sm text-gray-600">
-                            {item.size && <span className="mr-2">Size: {item.size}</span>}
-                            <span>Qty: {item.quantity}</span>
-                          </p>
-                          <p className="text-sm font-semibold text-amber-700 mt-1">
-                            ₹{item.price.toFixed(2)} × {item.quantity} = ₹{(item.price * item.quantity).toFixed(2)}
-                          </p>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-900 truncate">{item.name}</p>
+                            <p className="text-sm text-gray-600">
+                              {item.size && <span className="mr-2">Size: {item.size}</span>}
+                              <span>Qty: {item.quantity}</span>
+                            </p>
+                            <p className="text-sm font-semibold text-amber-700 mt-1">
+                              ₹{item.price.toFixed(2)} × {item.quantity} = ₹{(item.price * item.quantity).toFixed(2)}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 

@@ -23,9 +23,10 @@ import {
   Eye,
   X,
   Plus,
-  Trash2
+  Trash2,
+  Upload
 } from 'lucide-react';
-import { projectId, publicAnonKey } from '/utils/supabase/info';
+import { projectId, publicAnonKey } from '../../../utils/supabase/info';
 
 interface Order {
   orderId: string;
@@ -190,11 +191,65 @@ export function AdminDashboard() {
   };
 
   const handleExportToExcel = () => {
-    window.open(
-      `https://${projectId}.supabase.co/functions/v1/make-server-e222e178/orders/export/csv`,
-      '_blank'
-    );
-    toast.success('Downloading orders export...');
+    try {
+      // Create CSV content with detailed columns including Product ID and Size
+      let csv = "Order ID,Order Date,Customer First Name,Customer Last Name,Email,Phone,Address,City,State,ZIP,Product ID,Product Name,Size,Quantity,Unit Price,Item Total,Order Total,Payment Status,Order Status,Tracking Number,Tracking URL\n";
+      
+      orders.forEach((order) => {
+        // Create one row per product item
+        order.items.forEach((item) => {
+          const orderDate = new Date(order.createdAt).toLocaleString('en-US', { 
+            year: 'numeric', 
+            month: '2-digit', 
+            day: '2-digit', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          });
+          
+          const row = [
+            order.orderId,
+            orderDate,
+            order.customerInfo.firstName,
+            order.customerInfo.lastName,
+            order.customerInfo.email,
+            order.customerInfo.phone,
+            `"${order.customerInfo.address}"`,
+            order.customerInfo.city,
+            order.customerInfo.state,
+            order.customerInfo.zipCode,
+            item.id || 'N/A',
+            `"${item.name}"`,
+            item.size || 'N/A',
+            item.quantity,
+            item.price.toFixed(2),
+            (item.price * item.quantity).toFixed(2),
+            order.total.toFixed(2),
+            order.paymentStatus || 'N/A',
+            order.status,
+            order.trackingNumber || 'N/A',
+            order.trackingUrl || 'N/A',
+          ].join(",");
+          
+          csv += row + "\n";
+        });
+      });
+
+      // Create and download the file
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `VASTRAM-Orders-${Date.now()}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success('Orders exported successfully!');
+    } catch (error) {
+      console.error('Error exporting orders:', error);
+      toast.error('Failed to export orders');
+    }
   };
 
   const handleQuickReset = async () => {
@@ -476,6 +531,13 @@ export function AdminDashboard() {
               Add New Product
             </Button>
             <Button
+              onClick={() => navigate('/admin/migrate-images')}
+              className="bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-2"
+            >
+              <Upload className="w-4 h-4" />
+              Migrate Product Images
+            </Button>
+            <Button
               onClick={handleQuickReset}
               className="bg-red-600 hover:bg-red-700 flex items-center justify-center gap-2"
             >
@@ -744,12 +806,17 @@ export function AdminDashboard() {
                 <div className="space-y-2">
                   {viewOrderDetails.items.map((item, index) => (
                     <div key={index} className="bg-amber-50 rounded-lg p-4 flex justify-between items-center">
-                      <div>
+                      <div className="flex-1">
                         <p className="font-semibold text-gray-900">{item.name}</p>
                         <p className="text-sm text-gray-600">
                           {item.size && `Size: ${item.size} • `}
                           Unit Price: ₹{item.price.toFixed(2)} • Quantity: {item.quantity}
                         </p>
+                        {item.id && (
+                          <p className="text-xs text-gray-500 mt-1 font-mono">
+                            Product ID: {item.id}
+                          </p>
+                        )}
                       </div>
                       <p className="font-bold text-amber-700 text-lg">₹{(item.price * item.quantity).toFixed(2)}</p>
                     </div>

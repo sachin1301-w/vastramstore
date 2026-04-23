@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { projectId, publicAnonKey } from '/utils/supabase/info';
+import { projectId, publicAnonKey } from '../../../utils/supabase/info';
 import { Button } from '../components/ui/button';
 import { motion } from 'motion/react';
 import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';

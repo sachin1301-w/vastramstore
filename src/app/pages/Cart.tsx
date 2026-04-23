@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { useCart } from '../context/CartContext';
 import { Button } from '../components/ui/button';
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
@@ -36,7 +37,7 @@ export function Cart() {
                 key={`${item.id}-${item.size}`}
                 className="bg-white rounded-lg p-4 flex gap-4 shadow-sm"
               >
-                <img
+                <ImageWithFallback
                   src={item.image}
                   alt={item.name}
                   className="w-24 h-24 object-cover rounded-md"

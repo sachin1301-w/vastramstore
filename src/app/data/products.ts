@@ -72,6 +72,7 @@ export const products: Product[] = [
     "M"
   ],
   "inStock": true,
+  "stock":20,
   "featured": false,
   "badge": "SALE"
 }

@@ -8,7 +8,6 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { ShoppingCart, ArrowLeft, Heart } from 'lucide-react';
 import { toast } from 'sonner';
-import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 
 export function ProductDetail() {
   const { id } = useParams();
@@ -85,7 +84,7 @@ export function ProductDetail() {
           {/* Product Images */}
           <div>
             <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
-              <ImageWithFallback
+              <img
                 src={product.image}
                 alt={product.name}
                 className="w-full h-full object-cover"

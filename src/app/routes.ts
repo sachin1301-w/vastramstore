@@ -19,7 +19,6 @@ import { Profile } from './pages/Profile';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { RazorpayDebug } from './pages/RazorpayDebug';
 import { ImageUploader } from './pages/ImageUploader';
-import { ProductImageMigration } from './pages/ProductImageMigration';
 import { NotFound } from './pages/NotFound';
 
 export const router = createBrowserRouter([
@@ -48,8 +47,6 @@ export const router = createBrowserRouter([
       { path: 'profile', Component: Profile },
       { path: 'debug/razorpay', Component: RazorpayDebug },
       { path: 'image-uploader', Component: ImageUploader },
-      { path: 'product-image-migration', Component: ProductImageMigration },
-      { path: 'admin/migrate-images', Component: ProductImageMigration },
       { path: '*', Component: NotFound },
     ],
   },

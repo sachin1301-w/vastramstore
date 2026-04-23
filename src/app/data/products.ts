@@ -41,9 +41,9 @@ export const products: Product[] = [
   "description": "children saree",
   "price": 500,
   "originalPrice": 500,
-  "image": "https://juwtfhevkbfywawzzexn.supabase.co/storage/v1/object/public/make-e222e178-product-images/1773907996913-cs2bybh.jpeg",
+  "image": "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/5bd3e225-eaf1-485e-ad32-2910eeb633a3.jpeg",
   "images": [
-    "https://juwtfhevkbfywawzzexn.supabase.co/storage/v1/object/public/make-e222e178-product-images/1773907996913-cs2bybh.jpeg"
+    "https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/5bd3e225-eaf1-485e-ad32-2910eeb633a3.jpeg"
   ],
   "category": "Sarees",
   "sizes": [

@@ -78,7 +78,7 @@ export const products: Product[] = [
     "stock":20,
   "featured": false,
   "badge": "TRENDING"
-}
+},
 {
   "id": "1776966559135-9giw08u",
   "name": "sarees",

@@ -56,6 +56,29 @@ export const products: Product[] = [
   "featured": false,
   "badge": "NEW"
 },
+  {
+  "id": "1777480829540-giydsil",
+  "name": "saree",
+  "description": "saree",
+  "price": 1000,
+  "originalPrice": 1500,
+  "image": "https://cdn.phototourl.com/free/2026-04-29-77892ef3-8d8c-45b1-862e-32e32bd301a2.jpg",
+  "images": [
+    "https://cdn.phototourl.com/free/2026-04-29-77892ef3-8d8c-45b1-862e-32e32bd301a2.jpg"
+  ],
+  "category": "Sarees",
+  "sizes": [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL"
+  ],
+  "inStock": true,
+    "stock":20,
+  "featured": false,
+  "badge": "TRENDING"
+}
 {
   "id": "1776966559135-9giw08u",
   "name": "sarees",

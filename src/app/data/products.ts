@@ -117,6 +117,7 @@ export const products: Product[] = [
     "L"
   ],
   "inStock": true,
+  "stock":10,
   "featured": false,
   "badge": "TRENDING"
 }

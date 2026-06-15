@@ -79,6 +79,27 @@ export const products: Product[] = [
   "featured": false,
   "badge": "TRENDING"
 },
+  {
+  "id": "1781526298961-kh6hf9m",
+  "name": "tshirt",
+  "description": "tshirt",
+  "price": 500,
+  "originalPrice": 500,
+  "image": "https://varied-harlequin-5czev3ej.edgeone.app/Screenshot%202026-05-17%20173818.png",
+  "images": [
+    "https://varied-harlequin-5czev3ej.edgeone.app/Screenshot%202026-05-17%20173818.png"
+  ],
+  "category": "T-Shirts",
+  "sizes": [
+    "XS",
+    "S",
+    "M",
+    "L"
+  ],
+  "inStock": true,
+  "featured": false,
+  "badge": "NEW"
+},
 {
   "id": "1776966559135-9giw08u",
   "name": "sarees",

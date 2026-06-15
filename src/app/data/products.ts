@@ -119,7 +119,28 @@ export const products: Product[] = [
   "stock":20,
   "featured": false,
   "badge": "SALE"
+} , {
+  "id": "1781509314482-y2ppwdv",
+  "name": "Cotton one piece ",
+  "description": "Cotton one piece Kurti",
+  "price": 999,
+  "originalPrice": 750,
+  "image": "https://cdn.corenexis.com/f/x8pZsMx2qFr.jpeg",
+  "images": [
+    "https://cdn.corenexis.com/f/x8pZsMx2qFr.jpeg"
+  ],
+  "category": "Dresses",
+  "sizes": [
+    "S",
+    "M",
+    "XS",
+    "L"
+  ],
+  "inStock": true,
+  "featured": false,
+  "badge": "TRENDING"
 }
+  
 ];
 
 export const categories = [

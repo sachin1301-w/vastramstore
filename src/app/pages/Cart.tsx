@@ -1,5 +1,7 @@
+
+
 import { Link } from 'react-router-dom';
-import { ImageSlideshow } from '../components/ImageSlideshow';
+import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { useCart } from '../context/CartContext';
 import { Button } from '../components/ui/button';
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
@@ -34,25 +36,18 @@ export function Cart() {
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => (
               <div
-                key={`${item.id}-${item.size}-${item.color ?? ''}`}
+                key={`${item.id}-${item.size}`}
                 className="bg-white rounded-lg p-4 flex gap-4 shadow-sm"
               >
-                <div className="w-24 h-24 rounded-md overflow-hidden flex-shrink-0">
-                  <ImageSlideshow
-                    images={item.images && item.images.length > 0 ? item.images : [item.image]}
-                    alt={item.name}
-                    className="w-24 h-24"
-                    showArrows={false}
-                  />
-                </div>
+                <ImageWithFallback
+                  src={item.image}
+                  alt={item.name}
+                  className="w-24 h-24 object-cover rounded-md"
+                />
                 <div className="flex-1">
                   <h3 className="mb-1">{item.name}</h3>
-                  {(item.size || item.color) && (
-                    <p className="text-sm text-gray-600 mb-2">
-                      {item.size && `Size: ${item.size}`}
-                      {item.size && item.color && '  •  '}
-                      {item.color && `Color: ${item.color}`}
-                    </p>
+                  {item.size && (
+                    <p className="text-sm text-gray-600 mb-2">Size: {item.size}</p>
                   )}
                   <p className="mb-3">₹{item.price.toFixed(2)}</p>
 
@@ -60,7 +55,7 @@ export function Cart() {
                     <div className="flex items-center border rounded-md">
                       <button
                         onClick={() =>
-                          updateQuantity(item.id, item.quantity - 1, item.size, item.color)
+                          updateQuantity(item.id, item.quantity - 1, item.size)
                         }
                         className="p-2 hover:bg-gray-100 transition-colors"
                       >
@@ -69,7 +64,7 @@ export function Cart() {
                       <span className="px-4">{item.quantity}</span>
                       <button
                         onClick={() =>
-                          updateQuantity(item.id, item.quantity + 1, item.size, item.color)
+                          updateQuantity(item.id, item.quantity + 1, item.size)
                         }
                         className="p-2 hover:bg-gray-100 transition-colors"
                       >
@@ -77,7 +72,7 @@ export function Cart() {
                       </button>
                     </div>
                     <button
-                      onClick={() => removeFromCart(item.id, item.size, item.color)}
+                      onClick={() => removeFromCart(item.id, item.size)}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
                     >
                       <Trash2 className="w-5 h-5" />
@@ -132,4 +127,3 @@ export function Cart() {
     </div>
   );
 }
-

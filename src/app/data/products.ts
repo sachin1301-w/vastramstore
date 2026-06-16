@@ -120,6 +120,29 @@ export const products: Product[] = [
   "stock":10,
   "featured": false,
   "badge": "TRENDING"
+},{
+  "id": "1781593024389-657oloi",
+  "name": "Zeel Raincoat",
+  "description": "JS201",
+  "price": 1665,
+  "originalPrice": 1849,
+  "image": "https://cdn.corenexis.com/f/a62CHlUTqYq.jpeg",
+  "images": [
+    "https://cdn.corenexis.com/f/a62CHlUTqYq.jpeg",
+    "https://cdn.corenexis.com/f/02p5Tqb8v0y.jpeg"
+   
+  ],
+  "category": "Raincoat",
+  "sizes": [
+    "L",
+    "XL",
+    "XXL"
+   
+  ],
+  "inStock": true,
+  "stock": 40,
+  "featured": false,
+  "badge": "NEW"
 }
   
 ];

@@ -21,7 +21,7 @@ export function AdminAddProduct() {
     galleryImages: [''],
   });
 
-  const categories = ['Dresses', 'Shirts', 'T-Shirts', 'Outerwear', 'Accessories', 'Bottoms', 'Traditional', 'Sarees'];
+  const categories = ['Dresses', 'Shirts', 'T-Shirts', 'Outerwear', 'Accessories', 'Bottoms', 'Traditional', 'Sarees','Raincoat'];
   const allSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
   const badges = ['', 'NEW', 'SALE', 'TRENDING', 'HOT'];
 

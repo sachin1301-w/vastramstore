@@ -132,4 +132,5 @@ export const categories = [
   'Outerwear',
   'Accessories',
   'Bottoms',
+  'Raincoat',
 ];

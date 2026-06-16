@@ -7,6 +7,13 @@ import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { Package, Upload, X, Plus, ArrowLeft } from 'lucide-react';
 
+// One row per size (or per size+color if colors are used)
+interface SizeStockRow {
+  size: string;
+  stock: string; // kept as string while typing, parsed to number on submit
+  color: string; // empty string if this product has no colors
+}
+
 export function AdminAddProduct() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -21,22 +28,72 @@ export function AdminAddProduct() {
     galleryImages: [''],
   });
 
+  // NEW: colors for this product (e.g. Red, Blue). Leave empty if the product has no color variants.
+  const [colors, setColors] = useState<string[]>([]);
+  const [newColor, setNewColor] = useState('');
+
+  // NEW: stock entered per size (and per color, if colors exist)
+  const [sizeStockRows, setSizeStockRows] = useState<SizeStockRow[]>([]);
+
   const categories = ['Dresses', 'Shirts', 'T-Shirts', 'Outerwear', 'Accessories', 'Bottoms', 'Traditional', 'Sarees','Raincoat'];
   const allSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
   const badges = ['', 'NEW', 'SALE', 'TRENDING', 'HOT'];
 
+  // Rebuild the size/stock rows whenever the selected sizes OR the colors list changes.
+  // If colors exist, we need one row per size PER color. If no colors, one row per size.
+  const rebuildSizeStockRows = (sizes: string[], colorList: string[]) => {
+    const rows: SizeStockRow[] = [];
+    const colorsToUse = colorList.length > 0 ? colorList : [''];
+
+    colorsToUse.forEach((color) => {
+      sizes.forEach((size) => {
+        // Preserve existing stock value if this size/color row already existed
+        const existing = sizeStockRows.find((r) => r.size === size && r.color === color);
+        rows.push({
+          size,
+          color,
+          stock: existing ? existing.stock : '',
+        });
+      });
+    });
+
+    setSizeStockRows(rows);
+  };
+
   const handleSizeToggle = (size: string) => {
-    if (formData.sizes.includes(size)) {
-      setFormData({
-        ...formData,
-        sizes: formData.sizes.filter(s => s !== size),
-      });
-    } else {
-      setFormData({
-        ...formData,
-        sizes: [...formData.sizes, size],
-      });
+    const newSizes = formData.sizes.includes(size)
+      ? formData.sizes.filter((s) => s !== size)
+      : [...formData.sizes, size];
+
+    setFormData({ ...formData, sizes: newSizes });
+    rebuildSizeStockRows(newSizes, colors);
+  };
+
+  const handleAddColor = () => {
+    const trimmed = newColor.trim();
+    if (!trimmed) return;
+    if (colors.includes(trimmed)) {
+      toast.error('Color already added');
+      return;
     }
+    const newColors = [...colors, trimmed];
+    setColors(newColors);
+    setNewColor('');
+    rebuildSizeStockRows(formData.sizes, newColors);
+  };
+
+  const handleRemoveColor = (color: string) => {
+    const newColors = colors.filter((c) => c !== color);
+    setColors(newColors);
+    rebuildSizeStockRows(formData.sizes, newColors);
+  };
+
+  const updateStockForRow = (size: string, color: string, value: string) => {
+    setSizeStockRows((prev) =>
+      prev.map((row) =>
+        row.size === size && row.color === color ? { ...row, stock: value } : row
+      )
+    );
   };
 
   const addGalleryImage = () => {
@@ -82,11 +139,28 @@ export function AdminAddProduct() {
       return;
     }
 
+    // Make sure every size (and size+color combo) has a stock value entered
+    const missingStock = sizeStockRows.some((row) => row.stock === '' || isNaN(Number(row.stock)));
+    if (missingStock) {
+      toast.error('Please enter stock quantity for every size' + (colors.length > 0 ? ' and color' : ''));
+      return;
+    }
+
     // Generate product code
     const productCode = generateProductCode();
 
     // Filter out empty gallery images
     const validGalleryImages = [formData.mainImage, ...formData.galleryImages.filter(img => img.trim() !== '')];
+
+    // Build the sizeStock array from the rows the admin filled in
+    const sizeStock = sizeStockRows.map((row) => ({
+      size: row.size,
+      stock: Number(row.stock),
+      ...(row.color ? { color: row.color } : {}),
+    }));
+
+    // Flat fallback stock = sum of all sizeStock entries (keeps old code that reads `stock` working)
+    const totalStock = sizeStock.reduce((sum, s) => sum + s.stock, 0);
 
     // Create product object
     const newProduct = {
@@ -99,7 +173,10 @@ export function AdminAddProduct() {
       images: validGalleryImages,
       category: formData.category,
       sizes: formData.sizes,
-      inStock: true,
+      colors: colors.length > 0 ? colors : undefined,
+      sizeStock,
+      inStock: totalStock > 0,
+      stock: totalStock,
       featured: false,
       badge: formData.badge || undefined,
     };
@@ -162,11 +239,12 @@ export function AdminAddProduct() {
           <h3 className="text-lg font-bold text-blue-900 mb-2">📝 How This Works</h3>
           <ol className="space-y-2 text-blue-800 text-sm">
             <li><strong>1.</strong> Fill in all product details below</li>
-            <li><strong>2.</strong> Upload your product images to Imgur.com or another image host</li>
-            <li><strong>3.</strong> Paste the image URLs in the image fields</li>
-            <li><strong>4.</strong> Click "Generate Product Code"</li>
-            <li><strong>5.</strong> The code will be copied to your clipboard automatically</li>
-            <li><strong>6.</strong> Paste it into <code className="bg-blue-200 px-1 rounded">/src/app/data/products.ts</code></li>
+            <li><strong>2.</strong> Select sizes, then (optionally) add colors, then enter stock for each size/color</li>
+            <li><strong>3.</strong> Upload your product images to Imgur.com or another image host</li>
+            <li><strong>4.</strong> Paste the image URLs in the image fields (add 3-4 for a slideshow)</li>
+            <li><strong>5.</strong> Click "Generate Product Code"</li>
+            <li><strong>6.</strong> The code will be copied to your clipboard automatically</li>
+            <li><strong>7.</strong> Paste it into <code className="bg-blue-200 px-1 rounded">/src/app/data/products.ts</code></li>
           </ol>
         </motion.div>
 
@@ -290,6 +368,110 @@ export function AdminAddProduct() {
               </div>
             </div>
 
+            {/* NEW: Colors (optional) */}
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold text-gray-900 border-b-2 border-orange-500 pb-2">
+                Colors - Optional
+              </h3>
+              <p className="text-xs text-gray-500">
+                Add colors only if this product comes in more than one color. If you skip this, stock will just be tracked per size.
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  value={newColor}
+                  onChange={(e) => setNewColor(e.target.value)}
+                  placeholder="e.g., Red"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddColor();
+                    }
+                  }}
+                />
+                <Button type="button" variant="outline" onClick={handleAddColor}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Color
+                </Button>
+              </div>
+              {colors.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {colors.map((color) => (
+                    <span
+                      key={color}
+                      className="flex items-center gap-2 bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium"
+                    >
+                      {color}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveColor(color)}
+                        className="hover:text-red-600"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* NEW: Stock per size (and per color) */}
+            {formData.sizes.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold text-gray-900 border-b-2 border-orange-500 pb-2">
+                  Stock Quantity *
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Enter how many units you have for each size{colors.length > 0 ? ' and color' : ''}.
+                </p>
+
+                {colors.length === 0 ? (
+                  // Simple case: one stock field per size
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {sizeStockRows.map((row) => (
+                      <div key={row.size}>
+                        <Label htmlFor={`stock-${row.size}`}>Size {row.size}</Label>
+                        <Input
+                          id={`stock-${row.size}`}
+                          type="number"
+                          min="0"
+                          value={row.stock}
+                          onChange={(e) => updateStockForRow(row.size, '', e.target.value)}
+                          placeholder="Qty"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  // With colors: group stock fields by color
+                  <div className="space-y-6">
+                    {colors.map((color) => (
+                      <div key={color} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <p className="font-semibold text-gray-800 mb-3">{color}</p>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          {formData.sizes.map((size) => {
+                            const row = sizeStockRows.find((r) => r.size === size && r.color === color);
+                            return (
+                              <div key={`${color}-${size}`}>
+                                <Label htmlFor={`stock-${color}-${size}`}>Size {size}</Label>
+                                <Input
+                                  id={`stock-${color}-${size}`}
+                                  type="number"
+                                  min="0"
+                                  value={row?.stock ?? ''}
+                                  onChange={(e) => updateStockForRow(size, color, e.target.value)}
+                                  placeholder="Qty"
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Images */}
             <div className="space-y-4">
               <h3 className="text-xl font-bold text-gray-900 border-b-2 border-orange-500 pb-2">
@@ -305,6 +487,7 @@ export function AdminAddProduct() {
                   <li>2. Click "New post" and upload your image</li>
                   <li>3. Right-click on the uploaded image → "Copy image address"</li>
                   <li>4. Paste the URL in the fields below</li>
+                  <li>5. Add 3-4 images total (main + gallery) so customers can swipe through a slideshow</li>
                 </ol>
               </div>
 
@@ -333,7 +516,7 @@ export function AdminAddProduct() {
 
               <div>
                 <Label>Gallery Images (Additional Views)</Label>
-                <p className="text-xs text-gray-500 mb-3">Add multiple images to show different angles</p>
+                <p className="text-xs text-gray-500 mb-3">Add multiple images (e.g. front, back, side, close-up) to power the slideshow on the product card and detail page</p>
                 
                 {formData.galleryImages.map((image, index) => (
                   <div key={index} className="flex gap-2 mb-3">
@@ -342,6 +525,16 @@ export function AdminAddProduct() {
                       onChange={(e) => updateGalleryImage(index, e.target.value)}
                       placeholder={`Image ${index + 2} URL (optional)`}
                     />
+                    {image && (
+                      <img
+                        src={image}
+                        alt={`Gallery ${index + 2}`}
+                        className="w-12 h-12 object-cover rounded-md border-2 border-gray-200 flex-shrink-0"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    )}
                     <Button
                       type="button"
                       variant="ghost"

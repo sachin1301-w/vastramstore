@@ -103,8 +103,8 @@ export const products: Product[] = [
   "id": "1781509314482-y2ppwdv",
   "name": "Cotton one piece ",
   "description": "Cotton one piece Kurti",
-  "price": 999,
-  "originalPrice": 750,
+  "price": 750,
+  "originalPrice": 999,
   "image": "https://cdn.corenexis.com/f/x8pZsMx2qFr.jpeg",
   "images": [
     "https://cdn.corenexis.com/f/x8pZsMx2qFr.jpeg"

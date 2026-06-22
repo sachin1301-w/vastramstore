@@ -1,27 +1,40 @@
 import { useState, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { products } from '../data/products';
+import { findProductById, getTotalStock, getSizeStock } from '../data/products';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { StockContext } from '../context/StockContext';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { ShoppingCart, ArrowLeft, Heart } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 
 export function ProductDetail() {
   const { id } = useParams();
-  const product = products.find((p) => p.id === id);
+  const product = findProductById(id);
   const { addToCart } = useCart();
   const { user } = useAuth();
   const stockContext = useContext(StockContext);
   const navigate = useNavigate();
   const [selectedSize, setSelectedSize] = useState<string>('');
+  const [selectedColor, setSelectedColor] = useState<string>('');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Use context stock if available, otherwise fall back to product's initial stock
-  const stock = product
-    ? (stockContext ? stockContext.getStock(product.id) : (product.stock ?? 10))
+  const allImages = product?.images && product.images.length > 0
+    ? product.images
+    : (product ? [product.image] : []);
+
+  // Calculate total stock dynamically
+  const totalStock = product
+    ? (stockContext ? stockContext.getStock(product.id) : getTotalStock(product))
+    : 0;
+
+  // Get stock for selected size (and color if applicable)
+  const selectedSizeStock = product && selectedSize
+    ? (stockContext
+        ? stockContext.getSizeStock(product.id, selectedSize, selectedColor || undefined)
+        : getSizeStock(product, selectedSize, selectedColor || undefined))
     : 0;
 
   if (!product) {
@@ -37,6 +50,18 @@ export function ProductDetail() {
     );
   }
 
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) => (prev === allImages.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleThumbnailClick = (index: number) => {
+    setCurrentImageIndex(index);
+  };
+
   const handleAddToCart = () => {
     // Check if user is logged in first
     if (!user) {
@@ -51,7 +76,7 @@ export function ProductDetail() {
     }
 
     // Check stock availability
-    if (stock <= 0) {
+    if (totalStock <= 0) {
       toast.error('This product is out of stock');
       return;
     }
@@ -61,12 +86,24 @@ export function ProductDetail() {
       return;
     }
 
+    // Check size-specific stock if sizeStock exists
+    if (product.sizeStock && product.sizeStock.length > 0 && selectedSize) {
+      const sizeStock = stockContext
+        ? stockContext.getSizeStock(product.id, selectedSize, selectedColor || undefined)
+        : getSizeStock(product, selectedSize, selectedColor || undefined);
+      if (sizeStock <= 0) {
+        toast.error(`Size ${selectedSize}${selectedColor ? ` (${selectedColor})` : ''} is out of stock`);
+        return;
+      }
+    }
+
     addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
       image: product.image,
       size: selectedSize || undefined,
+      color: selectedColor || undefined,
     });
 
     toast.success('Added to cart!');
@@ -82,20 +119,72 @@ export function ProductDetail() {
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Product Images */}
+          {/* Product Images with Slideshow */}
           <div>
+            {/* Main Image */}
             <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
               <ImageWithFallback
-                src={product.image}
+                src={allImages[currentImageIndex]}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
+              
+              {/* Navigation Arrows */}
+              {allImages.length > 1 && (
+                <>
+                  <button
+                    onClick={handlePrevImage}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-all duration-200 z-10"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="w-6 h-6 text-gray-700" />
+                  </button>
+                  <button
+                    onClick={handleNextImage}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-all duration-200 z-10"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="w-6 h-6 text-gray-700" />
+                  </button>
+                </>
+              )}
+
               {product.badge && (
                 <Badge className="absolute top-4 left-4 bg-amber-700 hover:bg-amber-800">
                   {product.badge}
                 </Badge>
               )}
             </div>
+
+            {/* Thumbnail Images */}
+            {allImages.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {allImages.map((img, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleThumbnailClick(index)}
+                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                      index === currentImageIndex
+                        ? 'border-amber-600 ring-2 ring-amber-200'
+                        : 'border-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    <ImageWithFallback
+                      src={img}
+                      alt={`${product.name} - view ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Image Counter */}
+            {allImages.length > 1 && (
+              <p className="text-center text-sm text-gray-500 mt-2">
+                {currentImageIndex + 1} / {allImages.length}
+              </p>
+            )}
           </div>
 
           {/* Product Info */}
@@ -117,6 +206,33 @@ export function ProductDetail() {
               <p className="text-gray-600 leading-relaxed">{product.description}</p>
             </div>
 
+            {/* Color Selection */}
+            {product.colors && product.colors.length > 0 && (
+              <div className="mb-6">
+                <label className="block mb-3">
+                  Select Color {selectedColor && <span className="text-amber-700 font-medium">- {selectedColor}</span>}
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {product.colors.map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => {
+                        setSelectedColor(color);
+                        setSelectedSize('');
+                      }}
+                      className={`px-4 py-2 border rounded-md transition-colors ${
+                        selectedColor === color
+                          ? 'bg-amber-700 text-white border-amber-700'
+                          : 'border-gray-300 hover:border-amber-700'
+                      }`}
+                    >
+                      {color}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Size Selection */}
             {product.sizes.length > 0 && (
               <div className="mb-6">
@@ -124,30 +240,51 @@ export function ProductDetail() {
                   Select Size
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {product.sizes.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 border rounded-md transition-colors ${
-                        selectedSize === size
-                          ? 'bg-amber-700 text-white border-amber-700'
-                          : 'border-gray-300 hover:border-amber-700'
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
+                  {product.sizes.map((size) => {
+                    const sizeStock = product.sizeStock
+                      ? getSizeStock(product, size, selectedColor || undefined)
+                      : undefined;
+                    const isOutOfStock = sizeStock !== undefined && sizeStock <= 0;
+
+                    return (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        disabled={isOutOfStock}
+                        className={`px-4 py-2 border rounded-md transition-colors ${
+                          selectedSize === size
+                            ? 'bg-amber-700 text-white border-amber-700'
+                            : isOutOfStock
+                              ? 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
+                              : 'border-gray-300 hover:border-amber-700'
+                        }`}
+                        title={isOutOfStock ? 'Out of stock' : sizeStock !== undefined ? `${sizeStock} available` : ''}
+                      >
+                        {size}
+                        {sizeStock !== undefined && sizeStock > 0 && (
+                          <span className="ml-1 text-xs opacity-70">({sizeStock})</span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {/* Stock Status */}
             <div className="mb-6">
-              {stock > 0 ? (
+              {totalStock > 0 ? (
                 <div>
-                  <p className="text-green-600 font-medium">In Stock: {stock} units available</p>
-                  {stock <= 5 && (
-                    <p className="text-orange-600 text-sm mt-1">Only {stock} left - Order soon!</p>
+                  <p className="text-green-600 font-medium">
+                    In Stock: {totalStock} units available
+                    {selectedSize && product.sizeStock && (
+                      <span className="text-gray-600 font-normal ml-2">
+                        (Size {selectedSize}: {selectedSizeStock} available)
+                      </span>
+                    )}
+                  </p>
+                  {totalStock <= 5 && (
+                    <p className="text-orange-600 text-sm mt-1">Only {totalStock} left - Order soon!</p>
                   )}
                 </div>
               ) : (
@@ -161,10 +298,10 @@ export function ProductDetail() {
                 size="lg"
                 className="flex-1 bg-amber-700 hover:bg-amber-800"
                 onClick={handleAddToCart}
-                disabled={stock <= 0}
+                disabled={totalStock <= 0}
               >
                 <ShoppingCart className="w-5 h-5 mr-2" />
-                {stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+                {totalStock > 0 ? 'Add to Cart' : 'Out of Stock'}
               </Button>
               <Button size="lg" variant="outline">
                 <Heart className="w-5 h-5" />

@@ -18,6 +18,12 @@ const equalizeImg = 'https://images.unsplash.com/photo-1655141559812-42f8c1e8942
 const noiracentImg = 'https://images.unsplash.com/photo-1666358085449-a10a39f33942?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZXNpZ25lciUyMHRzaGlydCUyMG1pbmltYWx8ZW58MXx8fHwxNzczODQyMDAyfDA&ixlib=rb-4.1.0&q=80&w=1080';
 const vixyImg = 'https://images.unsplash.com/photo-1768935706759-f2be765b3aec?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdHlsaXNoJTIwdHNoaXJ0JTIwZmFzaGlvbnxlbnwxfHx8fDE3NzM4NDIwMDJ8MA&ixlib=rb-4.1.0&q=80&w=1080';
 
+export interface SizeStock {
+  size: string;
+  stock: number;
+  color?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -28,6 +34,8 @@ export interface Product {
   images?: string[];
   category: string;
   sizes: string[];
+  colors?: string[];
+  sizeStock?: SizeStock[];
   inStock: boolean;
   stock?: number;
   featured?: boolean;
@@ -169,13 +177,234 @@ export const products: Product[] = [
   
 ];
 
-export const categories = [
-  'All',
-  'Dresses',
-  'Shirts',
-  'T-Shirts',
-  'Outerwear',
-  'Accessories',
-  'Bottoms',
-  'Raincoat',
-];
+// ============================================================
+// DYNAMIC DATA LAYER (localStorage-backed)
+// ------------------------------------------------------------
+// There is no product database in this app — admin-added
+// products, categories, badges and stock changes are persisted
+// in the browser's localStorage so they show up immediately
+// across every page (Home, Products, ProductDetail, Cart,
+// Checkout, ProductCard) without needing a manual code paste.
+// ============================================================
+
+const DYNAMIC_PRODUCTS_KEY = 'vastram_dynamic_products';
+const STOCK_OVERRIDES_KEY = 'vastram_stock_overrides';
+const CATEGORIES_KEY = 'vastram_categories';
+const BADGES_KEY = 'vastram_badges';
+
+const DEFAULT_CATEGORIES = ['All', 'Dresses', 'Shirts', 'T-Shirts', 'Outerwear', 'Accessories', 'Bottoms', 'Raincoat', 'Sarees'];
+const DEFAULT_BADGES = ['NEW', 'SALE', 'TRENDING', 'HOT'];
+
+// Dynamic categories and badges loaded from localStorage or defaults
+const getStoredCategories = (): string[] => {
+  try {
+    const stored = localStorage.getItem(CATEGORIES_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch { /* ignore */ }
+  return DEFAULT_CATEGORIES;
+};
+
+const getStoredBadges = (): string[] => {
+  try {
+    const stored = localStorage.getItem(BADGES_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch { /* ignore */ }
+  return DEFAULT_BADGES;
+};
+
+export const categories = getStoredCategories();
+export const availableBadges = getStoredBadges();
+
+// Live re-read versions (use these in components so newly added categories/badges
+// from the Admin Dashboard show up without needing a full page reload).
+export const getStoredCategoriesList = (): string[] => getStoredCategories();
+export const getStoredBadgesList = (): string[] => getStoredBadges();
+
+// Add a new category (used by Admin Dashboard). Returns the updated list.
+export const addCategory = (category: string): string[] => {
+  const trimmed = category.trim();
+  const current = getStoredCategories();
+  if (!trimmed || current.includes(trimmed)) return current;
+  const updated = [...current, trimmed];
+  try {
+    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(updated));
+  } catch { /* ignore */ }
+  return updated;
+};
+
+// Remove a category (used by Admin Dashboard). Returns the updated list.
+export const removeCategory = (category: string): string[] => {
+  const current = getStoredCategories();
+  const updated = current.filter((c) => c !== category && c !== 'All');
+  try {
+    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(updated));
+  } catch { /* ignore */ }
+  return updated;
+};
+
+// Add a new badge (used by Admin Dashboard). Returns the updated list.
+export const addBadge = (badge: string): string[] => {
+  const trimmed = badge.trim().toUpperCase();
+  const current = getStoredBadges();
+  if (!trimmed || current.includes(trimmed)) return current;
+  const updated = [...current, trimmed];
+  try {
+    localStorage.setItem(BADGES_KEY, JSON.stringify(updated));
+  } catch { /* ignore */ }
+  return updated;
+};
+
+// Remove a badge (used by Admin Dashboard). Returns the updated list.
+export const removeBadge = (badge: string): string[] => {
+  const current = getStoredBadges();
+  const updated = current.filter((b) => b !== badge);
+  try {
+    localStorage.setItem(BADGES_KEY, JSON.stringify(updated));
+  } catch { /* ignore */ }
+  return updated;
+};
+
+// ---- Dynamic (admin-added) products ----
+
+const getDynamicProducts = (): Product[] => {
+  try {
+    const stored = localStorage.getItem(DYNAMIC_PRODUCTS_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch { /* ignore */ }
+  return [];
+};
+
+// Save a brand new product added from Admin > Add Product. Shows up everywhere instantly.
+export const addDynamicProduct = (product: Product): void => {
+  const current = getDynamicProducts();
+  current.push(product);
+  try {
+    localStorage.setItem(DYNAMIC_PRODUCTS_KEY, JSON.stringify(current));
+  } catch { /* ignore */ }
+};
+
+// Remove an admin-added product by id.
+export const removeDynamicProduct = (productId: string): void => {
+  const current = getDynamicProducts().filter((p) => p.id !== productId);
+  try {
+    localStorage.setItem(DYNAMIC_PRODUCTS_KEY, JSON.stringify(current));
+  } catch { /* ignore */ }
+};
+
+// The full product catalog: static products.ts entries + admin-added ones.
+// Every page (Home, Products, ProductDetail, ProductCard, Cart, Checkout)
+// should read from this instead of the raw `products` array so new
+// products show up immediately without editing this file.
+export const getAllProducts = (): Product[] => {
+  return [...products, ...getDynamicProducts()];
+};
+
+// Find a single product (static or dynamic) by id.
+export const findProductById = (id: string | undefined): Product | undefined => {
+  if (!id) return undefined;
+  return getAllProducts().find((p) => p.id === id);
+};
+
+// ---- Dynamic stock overrides ----
+// Per-size (and per-color) stock lives here once an admin adds/edits a
+// product or once an order is placed (stock gets decremented). Falls
+// back to the product's own sizeStock/stock when there's no override yet.
+
+interface StockOverrideEntry {
+  size: string;
+  color?: string;
+  stock: number;
+}
+
+type StockOverrides = Record<string, StockOverrideEntry[]>;
+
+const getStockOverrides = (): StockOverrides => {
+  try {
+    const stored = localStorage.getItem(STOCK_OVERRIDES_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch { /* ignore */ }
+  return {};
+};
+
+const saveStockOverrides = (overrides: StockOverrides): void => {
+  try {
+    localStorage.setItem(STOCK_OVERRIDES_KEY, JSON.stringify(overrides));
+  } catch { /* ignore */ }
+};
+
+// Set/replace the full sizeStock list for a product (used when admin adds/edits a product).
+export const setProductStock = (productId: string, sizeStock: SizeStock[]): void => {
+  const overrides = getStockOverrides();
+  overrides[productId] = sizeStock.map((s) => ({ size: s.size, color: s.color, stock: s.stock }));
+  saveStockOverrides(overrides);
+};
+
+// Reduce stock for a specific size/color combo by `qty` (used after an order is placed).
+// Never goes below 0.
+export const decrementStock = (productId: string, qty: number, size?: string, color?: string): void => {
+  const product = findProductById(productId);
+  if (!product) return;
+
+  const overrides = getStockOverrides();
+  let rows = overrides[productId];
+
+  // Seed overrides for this product from its base data the first time it's touched.
+  if (!rows) {
+    if (product.sizeStock && product.sizeStock.length > 0) {
+      rows = product.sizeStock.map((s) => ({ size: s.size, color: s.color, stock: s.stock }));
+    } else if (product.sizes.length > 0) {
+      // No per-size breakdown exists yet — evenly split the flat stock
+      // across sizes so the total still matches product.stock.
+      const base = product.stock ?? 0;
+      const perSize = Math.floor(base / product.sizes.length);
+      const remainder = base - perSize * product.sizes.length;
+      rows = product.sizes.map((s, i) => ({
+        size: s,
+        // give the leftover units to the first size so the sum still adds up
+        stock: perSize + (i === 0 ? remainder : 0),
+      }));
+    } else {
+      rows = [{ size: '', stock: product.stock ?? 0 }];
+    }
+  }
+
+  const matchSize = size ?? '';
+  const idx = rows.findIndex((r) => r.size === matchSize && (color ? r.color === color : !r.color));
+  if (idx > -1) {
+    rows[idx] = { ...rows[idx], stock: Math.max(0, rows[idx].stock - qty) };
+  }
+
+  overrides[productId] = rows;
+  saveStockOverrides(overrides);
+};
+
+// Get the effective sizeStock rows for a product (override if present, else base data).
+const getEffectiveSizeStock = (product: Product): StockOverrideEntry[] | null => {
+  const overrides = getStockOverrides();
+  const override = overrides[product.id];
+  if (override) return override;
+  if (product.sizeStock && product.sizeStock.length > 0) {
+    return product.sizeStock.map((s) => ({ size: s.size, color: s.color, stock: s.stock }));
+  }
+  return null;
+};
+
+// Helper to get total stock from sizeStock (override-aware) or fallback to product.stock
+export const getTotalStock = (product: Product): number => {
+  const effective = getEffectiveSizeStock(product);
+  if (effective) {
+    return effective.reduce((sum, s) => sum + s.stock, 0);
+  }
+  return product.stock ?? 0;
+};
+
+// Helper to get stock for a specific size (and optionally color), override-aware
+export const getSizeStock = (product: Product, size: string, color?: string): number => {
+  const effective = getEffectiveSizeStock(product);
+  if (!effective) return product.stock ?? 0;
+
+  const entry = effective.find(
+    s => s.size === size && (color ? s.color === color : !s.color)
+  );
+  return entry?.stock ?? 0;
+};

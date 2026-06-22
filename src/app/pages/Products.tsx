@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { products, categories } from '../data/products';
+import { getAllProducts, getStoredCategoriesList } from '../data/products';
 import { ProductCard } from '../components/ProductCard';
 import { Button } from '../components/ui/button';
 
@@ -8,11 +8,20 @@ export function Products() {
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [categories, setCategories] = useState<string[]>(['All', 'Dresses', 'Shirts', 'T-Shirts', 'Outerwear', 'Accessories', 'Bottoms', 'Raincoat', 'Sarees']);
+
+  // All products = static catalog + anything admin-added via Add Product (localStorage)
+  const allProducts = getAllProducts();
+
+  // Load categories from localStorage (kept fresh in case admin just added one)
+  useEffect(() => {
+    setCategories(getStoredCategoriesList());
+  }, []);
 
   let filteredProducts =
     selectedCategory === 'All'
-      ? products
-      : products.filter((p) => p.category === selectedCategory);
+      ? allProducts
+      : allProducts.filter((p) => p.category === selectedCategory);
 
   // Apply search filter if search query exists
   if (searchQuery) {

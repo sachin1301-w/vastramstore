@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import { Button } from '../components/ui/button';
-import { products } from '../data/products';
+import { getAllProducts } from '../data/products';
 import { motion } from 'motion/react';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
@@ -9,7 +9,8 @@ import 'slick-carousel/slick/slick-theme.css';
 import { Truck } from 'lucide-react';
 
 export function Home() {
-  const featuredProducts = products.filter((p) => p.featured);
+  // All products = static catalog + anything admin-added via Add Product (localStorage)
+  const featuredProducts = getAllProducts().filter((p) => p.featured);
 
   // Slider settings
   const sliderSettings = {

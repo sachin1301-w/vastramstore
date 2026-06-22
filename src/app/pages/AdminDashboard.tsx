@@ -24,9 +24,19 @@ import {
   X,
   Plus,
   Trash2,
-  Upload
+  Upload,
+  Tag,
+  Award
 } from 'lucide-react';
 import { projectId, publicAnonKey } from '../../../utils/supabase/info';
+import {
+  getStoredCategoriesList,
+  getStoredBadgesList,
+  addCategory,
+  removeCategory,
+  addBadge,
+  removeBadge,
+} from '../data/products';
 
 interface Order {
   orderId: string;
@@ -74,6 +84,54 @@ export function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewOrderDetails, setViewOrderDetails] = useState<Order | null>(null);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+
+  // NEW: category & badge management (persisted to localStorage, read by
+  // AdminAddProduct and Products/Home so new ones are usable everywhere)
+  const [categoryList, setCategoryList] = useState<string[]>([]);
+  const [badgeList, setBadgeList] = useState<string[]>([]);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newBadgeName, setNewBadgeName] = useState('');
+
+  useEffect(() => {
+    setCategoryList(getStoredCategoriesList());
+    setBadgeList(getStoredBadgesList());
+  }, []);
+
+  const handleAddCategory = () => {
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) {
+      toast.error('Please enter a category name');
+      return;
+    }
+    const updated = addCategory(trimmed);
+    setCategoryList(updated);
+    setNewCategoryName('');
+    toast.success(`Category "${trimmed}" added`);
+  };
+
+  const handleRemoveCategory = (category: string) => {
+    const updated = removeCategory(category);
+    setCategoryList(updated);
+    toast.success(`Category "${category}" removed`);
+  };
+
+  const handleAddBadge = () => {
+    const trimmed = newBadgeName.trim();
+    if (!trimmed) {
+      toast.error('Please enter a badge name');
+      return;
+    }
+    const updated = addBadge(trimmed);
+    setBadgeList(updated);
+    setNewBadgeName('');
+    toast.success(`Badge "${trimmed.toUpperCase()}" added`);
+  };
+
+  const handleRemoveBadge = (badge: string) => {
+    const updated = removeBadge(badge);
+    setBadgeList(updated);
+    toast.success(`Badge "${badge}" removed`);
+  };
 
   useEffect(() => {
     // Check if admin is logged in
@@ -544,6 +602,104 @@ export function AdminDashboard() {
               <Trash2 className="w-4 h-4" />
               Quick Reset Dashboard
             </Button>
+          </div>
+        </div>
+
+        {/* Manage Categories & Badges */}
+        <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4 text-gray-800">Manage Categories & Badges</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Categories */}
+            <div>
+              <Label className="flex items-center gap-2 mb-2">
+                <Tag className="w-4 h-4 text-orange-600" />
+                Categories
+              </Label>
+              <div className="flex gap-2 mb-3">
+                <Input
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="e.g., Footwear"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddCategory();
+                    }
+                  }}
+                />
+                <Button type="button" onClick={handleAddCategory} className="bg-orange-600 hover:bg-orange-700 flex-shrink-0">
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {categoryList.map((category) => (
+                  <span
+                    key={category}
+                    className="flex items-center gap-2 bg-orange-100 text-orange-800 px-3 py-1.5 rounded-full text-sm font-medium"
+                  >
+                    {category}
+                    {category !== 'All' && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCategory(category)}
+                        className="hover:text-red-600"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </span>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-3">
+                New categories appear instantly in Admin &gt; Add Product and in the Products page filter.
+              </p>
+            </div>
+
+            {/* Badges */}
+            <div>
+              <Label className="flex items-center gap-2 mb-2">
+                <Award className="w-4 h-4 text-amber-600" />
+                Badges
+              </Label>
+              <div className="flex gap-2 mb-3">
+                <Input
+                  value={newBadgeName}
+                  onChange={(e) => setNewBadgeName(e.target.value)}
+                  placeholder="e.g., LIMITED"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddBadge();
+                    }
+                  }}
+                />
+                <Button type="button" onClick={handleAddBadge} className="bg-amber-600 hover:bg-amber-700 flex-shrink-0">
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {badgeList.map((badge) => (
+                  <span
+                    key={badge}
+                    className="flex items-center gap-2 bg-amber-100 text-amber-800 px-3 py-1.5 rounded-full text-sm font-medium"
+                  >
+                    {badge}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveBadge(badge)}
+                      className="hover:text-red-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-3">
+                New badges appear instantly as options in Admin &gt; Add Product.
+              </p>
+            </div>
           </div>
         </div>
 

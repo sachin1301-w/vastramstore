@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -6,6 +6,7 @@ import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { Package, Upload, X, Plus, ArrowLeft } from 'lucide-react';
+import { addDynamicProduct, getStoredCategoriesList, getStoredBadgesList, Product } from '../data/products';
 
 // One row per size (or per size+color if colors are used)
 interface SizeStockRow {
@@ -35,9 +36,19 @@ export function AdminAddProduct() {
   // NEW: stock entered per size (and per color, if colors exist)
   const [sizeStockRows, setSizeStockRows] = useState<SizeStockRow[]>([]);
 
-  const categories = ['Dresses', 'Shirts', 'T-Shirts', 'Outerwear', 'Accessories', 'Bottoms', 'Traditional', 'Sarees','Raincoat'];
+  // Categories & badges are admin-managed (see Admin Dashboard) and stored in
+  // localStorage, so any category/badge added there shows up here automatically.
+  const [categories, setCategories] = useState<string[]>(['Dresses', 'Shirts', 'T-Shirts', 'Outerwear', 'Accessories', 'Bottoms', 'Sarees', 'Raincoat']);
+  const [badges, setBadges] = useState<string[]>(['', 'NEW', 'SALE', 'TRENDING', 'HOT']);
   const allSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
-  const badges = ['', 'NEW', 'SALE', 'TRENDING', 'HOT'];
+
+  useEffect(() => {
+    const storedCategories = getStoredCategoriesList().filter((c) => c !== 'All');
+    if (storedCategories.length > 0) setCategories(storedCategories);
+
+    const storedBadges = getStoredBadgesList();
+    if (storedBadges.length > 0) setBadges(['', ...storedBadges]);
+  }, []);
 
   // Rebuild the size/stock rows whenever the selected sizes OR the colors list changes.
   // If colors exist, we need one row per size PER color. If no colors, one row per size.
@@ -163,7 +174,7 @@ export function AdminAddProduct() {
     const totalStock = sizeStock.reduce((sum, s) => sum + s.stock, 0);
 
     // Create product object
-    const newProduct = {
+    const newProduct: Product = {
       id: productCode,
       name: formData.name,
       description: formData.description,
@@ -181,23 +192,31 @@ export function AdminAddProduct() {
       badge: formData.badge || undefined,
     };
 
-    // Generate the code to copy
-    const productCode_str = JSON.stringify(newProduct, null, 2);
-    
-    // Copy to clipboard
-    navigator.clipboard.writeText(productCode_str);
+    // Save it so it shows up immediately on Home, Products, ProductDetail,
+    // ProductCard, Cart and Checkout — no manual file editing needed.
+    addDynamicProduct(newProduct);
 
-    toast.success('Product code copied to clipboard!', {
-      description: 'Paste this into /src/app/data/products.ts in the products array',
-      duration: 8000,
+    toast.success('Product added successfully!', {
+      description: `${newProduct.name} is now live on the store.`,
+      duration: 5000,
     });
 
-    console.log('=== NEW PRODUCT CODE ===');
-    console.log('Copy this and add it to /src/app/data/products.ts:');
-    console.log('');
-    console.log(productCode_str + ',');
-    console.log('');
-    console.log('========================');
+    // Reset the form so the admin can add another product right away
+    setFormData({
+      name: '',
+      description: '',
+      price: '',
+      originalPrice: '',
+      category: formData.category,
+      sizes: [],
+      badge: '',
+      mainImage: '',
+      galleryImages: [''],
+    });
+    setColors([]);
+    setSizeStockRows([]);
+
+    navigate('/admin/dashboard');
   };
 
   return (
@@ -242,9 +261,8 @@ export function AdminAddProduct() {
             <li><strong>2.</strong> Select sizes, then (optionally) add colors, then enter stock for each size/color</li>
             <li><strong>3.</strong> Upload your product images to Imgur.com or another image host</li>
             <li><strong>4.</strong> Paste the image URLs in the image fields (add 3-4 for a slideshow)</li>
-            <li><strong>5.</strong> Click "Generate Product Code"</li>
-            <li><strong>6.</strong> The code will be copied to your clipboard automatically</li>
-            <li><strong>7.</strong> Paste it into <code className="bg-blue-200 px-1 rounded">/src/app/data/products.ts</code></li>
+            <li><strong>5.</strong> Click "Add Product" — it goes live on the store instantly</li>
+            <li><strong>6.</strong> Stock updates automatically as customers place orders</li>
           </ol>
         </motion.div>
 
@@ -565,10 +583,10 @@ export function AdminAddProduct() {
                 className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-4 text-lg"
               >
                 <Upload className="w-5 h-5 mr-2" />
-                Generate Product Code
+                Add Product
               </Button>
               <p className="text-xs text-gray-500 text-center mt-3">
-                The product code will be automatically copied to your clipboard
+                The product will be added to the store instantly — no manual file editing needed
               </p>
             </div>
           </form>
@@ -581,15 +599,14 @@ export function AdminAddProduct() {
           transition={{ delay: 0.3 }}
           className="mt-8 bg-gray-50 rounded-xl p-6 border border-gray-200"
         >
-          <h3 className="text-lg font-bold text-gray-900 mb-3">📋 Next Steps After Generating Code:</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-3">📋 What Happens Next:</h3>
           <ol className="space-y-2 text-gray-700">
-            <li><strong>1.</strong> The product code is now in your clipboard</li>
-            <li><strong>2.</strong> Open the file: <code className="bg-gray-200 px-2 py-1 rounded">/src/app/data/products.ts</code></li>
-            <li><strong>3.</strong> Find the <code className="bg-gray-200 px-2 py-1 rounded">export const products: Product[] = [</code> line</li>
-            <li><strong>4.</strong> Scroll to the end of the products array (before the <code className="bg-gray-200 px-2 py-1 rounded">];</code>)</li>
-            <li><strong>5.</strong> Paste your product code there</li>
-            <li><strong>6.</strong> Make sure there's a comma after the previous product</li>
-            <li><strong>7.</strong> Save the file - your product will appear instantly!</li>
+            <li><strong>1.</strong> Your product is saved and goes live immediately</li>
+            <li><strong>2.</strong> It will appear on Home (if featured later), Products, and search</li>
+            <li><strong>3.</strong> Stock shown to customers is the total of every size/color you entered</li>
+            <li><strong>4.</strong> Stock automatically decreases as customers place orders</li>
+            <li><strong>5.</strong> You can add more products anytime from this same page</li>
+            <li><strong>6.</strong> New categories or badges can be added from the Admin Dashboard</li>
           </ol>
         </motion.div>
       </div>

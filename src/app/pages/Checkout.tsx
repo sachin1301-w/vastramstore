@@ -1,1012 +1,726 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { useStock } from '../context/StockContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
-import { 
-  Download, 
-  Package, 
-  RefreshCw, 
-  Search, 
-  LogOut, 
-  Shield, 
-  User, 
-  Mail, 
-  Phone,
-  MapPin,
-  ShoppingBag,
-  DollarSign,
-  Calendar,
-  TrendingUp,
-  Users,
-  Eye,
-  X,
-  Plus,
-  Trash2,
-  Upload,
-  Tag,
-  Award
-} from 'lucide-react';
 import { projectId, publicAnonKey } from '../../../utils/supabase/info';
-import {
-  getStoredCategoriesList,
-  getStoredBadgesList,
-  addCategory,
-  removeCategory,
-  addBadge,
-  removeBadge,
-} from '../data/products';
+import { CreditCard, Smartphone, Wallet, ShieldCheck, Sparkles, MapPin, Mail, Phone, User } from 'lucide-react';
+import { motion } from 'motion/react';
+import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 
-interface Order {
-  orderId: string;
-  items: Array<{
-    id: number;
-    name: string;
-    price: number;
-    quantity: number;
-    size?: string;
-  }>;
-  customerInfo: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    address: string;
-    city: string;
-    state: string;
-    zipCode: string;
-  };
-  total: number;
-  status: string;
-  trackingNumber: string | null;
-  trackingUrl: string | null;
-  trackingEvents: Array<{
-    status: string;
-    location: string;
-    timestamp: string;
-    description: string;
-  }>;
-  createdAt: string;
-  updatedAt: string;
-  paymentStatus?: string;
-  orderSuccessful?: boolean;
+// Declare Razorpay on window
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
 }
 
-export function AdminDashboard() {
+export function Checkout() {
   const navigate = useNavigate();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [trackingNumber, setTrackingNumber] = useState('');
-  const [trackingUrl, setTrackingUrl] = useState('');
-  const [status, setStatus] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [viewOrderDetails, setViewOrderDetails] = useState<Order | null>(null);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const { items, getTotalPrice, clearCart } = useCart();
+  const { user } = useAuth();
+  const { getStock } = useStock();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const [razorpayKeyId, setRazorpayKeyId] = useState<string>('');
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: user?.email || '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+  });
 
-  // NEW: category & badge management (persisted to localStorage, read by
-  // AdminAddProduct and Products/Home so new ones are usable everywhere)
-  const [categoryList, setCategoryList] = useState<string[]>([]);
-  const [badgeList, setBadgeList] = useState<string[]>([]);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [newBadgeName, setNewBadgeName] = useState('');
-
+  // Auto-fill user data if signed in
   useEffect(() => {
-    setCategoryList(getStoredCategoriesList());
-    setBadgeList(getStoredBadgesList());
+    if (user) {
+      const nameParts = user.name.split(' ');
+      setFormData(prev => ({
+        ...prev,
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
+        email: user.email,
+      }));
+    }
+  }, [user]);
+
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => setRazorpayLoaded(true);
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
   }, []);
 
-  const handleAddCategory = () => {
-    const trimmed = newCategoryName.trim();
-    if (!trimmed) {
-      toast.error('Please enter a category name');
-      return;
-    }
-    const updated = addCategory(trimmed);
-    setCategoryList(updated);
-    setNewCategoryName('');
-    toast.success(`Category "${trimmed}" added`);
-  };
-
-  const handleRemoveCategory = (category: string) => {
-    const updated = removeCategory(category);
-    setCategoryList(updated);
-    toast.success(`Category "${category}" removed`);
-  };
-
-  const handleAddBadge = () => {
-    const trimmed = newBadgeName.trim();
-    if (!trimmed) {
-      toast.error('Please enter a badge name');
-      return;
-    }
-    const updated = addBadge(trimmed);
-    setBadgeList(updated);
-    setNewBadgeName('');
-    toast.success(`Badge "${trimmed.toUpperCase()}" added`);
-  };
-
-  const handleRemoveBadge = (badge: string) => {
-    const updated = removeBadge(badge);
-    setBadgeList(updated);
-    toast.success(`Badge "${badge}" removed`);
-  };
-
+  // Fetch Razorpay configuration
   useEffect(() => {
-    // Check if admin is logged in
-    const adminSession = localStorage.getItem('admin_session');
-    if (!adminSession) {
-      toast.error('Please login as admin');
-      navigate('/admin/login');
+    const fetchRazorpayConfig = async () => {
+      try {
+        const response = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/make-server-e222e178/payment/config`,
+          {
+            headers: {
+              'Authorization': `Bearer ${publicAnonKey}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+        
+        if (data.success && data.keyId) {
+          setRazorpayKeyId(data.keyId);
+          console.log('✅ Razorpay configured successfully');
+        } else {
+          console.log('ℹ️ Payment Gateway:', data.message || 'Razorpay not yet configured');
+        }
+      } catch (error) {
+        console.log('ℹ️ Payment gateway will be available soon');
+      }
+    };
+
+    fetchRazorpayConfig();
+  }, []);
+
+  // Redirect to cart if there are no items
+  useEffect(() => {
+    if (items.length === 0) {
+      navigate('/cart');
+    }
+  }, [items.length, navigate]);
+
+  const handlePayment = async (orderId: string, orderTotal: number) => {
+    // If Razorpay is not configured, skip payment and place order directly
+    if (!razorpayKeyId || !razorpayLoaded) {
+      console.log('Razorpay not available - placing order without payment');
+      
+      // Create order in backend (without payment)
+      const orderPayload = {
+        orderId,
+        items: items.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          size: item.size,
+          image: item.image,
+        })),
+        customerInfo: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+        },
+        total: orderTotal,
+      };
+
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-e222e178/orders/create-without-payment`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${publicAnonKey}`,
+          },
+          body: JSON.stringify(orderPayload),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to create order');
+      }
+      
+      toast.success('Order placed successfully!');
+      clearCart();
+      navigate(`/profile?orderSuccess=true&orderId=${orderId}`);
       return;
     }
 
-    fetchOrders();
-  }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('admin_session');
-    toast.success('Logged out successfully');
-    navigate('/admin/login');
-  };
-
-  const fetchOrders = async () => {
     try {
-      setLoading(true);
+      // Create Razorpay order
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-e222e178/orders`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-e222e178/payment/create-order`,
         {
-          headers: {
-            'Authorization': `Bearer ${publicAnonKey}`,
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        const sortedOrders = data.orders.sort(
-          (a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setOrders(sortedOrders);
-        setFilteredOrders(sortedOrders);
-      } else {
-        toast.error('Failed to fetch orders');
-      }
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      toast.error('Error fetching orders');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUpdateOrder = async (orderId: string) => {
-    try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-e222e178/orders/${orderId}`,
-        {
-          method: 'PUT',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${publicAnonKey}`,
           },
           body: JSON.stringify({
-            status,
-            trackingNumber,
-            trackingUrl,
+            amount: orderTotal,
+            currency: 'INR',
+            receipt: orderId,
           }),
         }
       );
 
-      const data = await response.json();
+      const paymentData = await response.json();
 
-      if (response.ok && data.success) {
-        toast.success('Order updated successfully');
-        setSelectedOrder(null);
-        setTrackingNumber('');
-        setTrackingUrl('');
-        setStatus('');
-        fetchOrders();
-      } else {
-        toast.error('Failed to update order');
+      if (!response.ok) {
+        throw new Error(paymentData.error || 'Failed to create payment order');
       }
-    } catch (error) {
-      console.error('Error updating order:', error);
-      toast.error('Error updating order');
-    }
-  };
 
-  const handleMarkAsSuccessful = async (orderId: string, currentStatus: boolean) => {
-    try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-e222e178/orders/${orderId}/mark-successful`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${publicAnonKey}`,
+      // Open Razorpay checkout
+      const options = {
+        key: razorpayKeyId,
+        amount: paymentData.amount,
+        currency: paymentData.currency,
+        name: 'VASTRAM',
+        description: `Order #${orderId}`,
+        order_id: paymentData.orderId,
+        handler: async function (response: any) {
+          // Verify payment and create order
+          const verifyResponse = await fetch(
+            `https://${projectId}.supabase.co/functions/v1/make-server-e222e178/payment/verify`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${publicAnonKey}`,
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                orderId,
+                orderData: {
+                  items: items.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                    size: item.size,
+                    image: item.image,
+                  })),
+                  customerInfo: {
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    email: formData.email,
+                    phone: formData.phone,
+                    address: formData.address,
+                    city: formData.city,
+                    state: formData.state,
+                    zipCode: formData.zipCode,
+                  },
+                  total: orderTotal,
+                },
+              }),
+            }
+          );
+
+          const verifyData = await verifyResponse.json();
+
+          if (verifyData.success) {
+            clearCart();
+            toast.success('Payment successful!');
+            navigate(`/profile?orderSuccess=true&orderId=${orderId}`);
+          } else {
+            setIsSubmitting(false);
+            toast.error('❌ Payment Unsuccessful', {
+              duration: 6000,
+              description: 'Payment verification failed. Your order was not placed. Please try again.',
+            });
+          }
+        },
+        prefill: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          contact: formData.phone,
+        },
+        notes: {
+          address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
+        },
+        theme: {
+          color: '#b45309',
+        },
+        config: {
+          display: {
+            hide: [{ method: 'emi' }],
           },
-          body: JSON.stringify({
-            orderSuccessful: !currentStatus,
-          }),
-        }
-      );
+        },
+        modal: {
+          ondismiss: function() {
+            setIsSubmitting(false);
+            toast.error('❌ Payment Cancelled', {
+              duration: 5000,
+              description: 'You cancelled the payment. Your order was not placed. You can try again anytime.',
+            });
+          },
+          escape: false,
+          animation: true,
+          confirm_close: true,
+        },
+        retry: {
+          enabled: true,
+          max_count: 4,
+        },
+        timeout: 300, // 5 minutes timeout
+        readonly: {
+          contact: false,
+          email: false,
+          name: false,
+        },
+      };
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        toast.success(!currentStatus ? 'Order marked as successful!' : 'Order success status removed');
-        fetchOrders();
-      } else {
-        toast.error('Failed to update order');
-      }
-    } catch (error) {
-      console.error('Error updating order:', error);
-      toast.error('Error updating order');
-    }
-  };
-
-  const handleExportToExcel = () => {
-    try {
-      // Create CSV content with detailed columns including Product ID and Size
-      let csv = "Order ID,Order Date,Customer First Name,Customer Last Name,Email,Phone,Address,City,State,ZIP,Product ID,Product Name,Size,Quantity,Unit Price,Item Total,Order Total,Payment Status,Order Status,Tracking Number,Tracking URL\n";
+      const razorpay = new window.Razorpay(options);
       
-      orders.forEach((order) => {
-        // Create one row per product item
-        order.items.forEach((item) => {
-          const orderDate = new Date(order.createdAt).toLocaleString('en-US', { 
-            year: 'numeric', 
-            month: '2-digit', 
-            day: '2-digit', 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          });
-          
-          const row = [
-            order.orderId,
-            orderDate,
-            order.customerInfo.firstName,
-            order.customerInfo.lastName,
-            order.customerInfo.email,
-            order.customerInfo.phone,
-            `"${order.customerInfo.address}"`,
-            order.customerInfo.city,
-            order.customerInfo.state,
-            order.customerInfo.zipCode,
-            item.id || 'N/A',
-            `"${item.name}"`,
-            item.size || 'N/A',
-            item.quantity,
-            item.price.toFixed(2),
-            (item.price * item.quantity).toFixed(2),
-            order.total.toFixed(2),
-            order.paymentStatus || 'N/A',
-            order.status,
-            order.trackingNumber || 'N/A',
-            order.trackingUrl || 'N/A',
-          ].join(",");
-          
-          csv += row + "\n";
+      // Handle payment failures
+      razorpay.on('payment.failed', function (response: any) {
+        console.error('Payment failed:', response.error);
+        setIsSubmitting(false);
+        
+        const errorCode = response.error.code;
+        const errorDescription = response.error.description;
+        const errorReason = response.error.reason;
+        
+        console.log('Error Code:', errorCode);
+        console.log('Error Description:', errorDescription);
+        console.log('Error Reason:', errorReason);
+        
+        // Show user-friendly error messages
+        let errorMessage = '❌ Payment Unsuccessful';
+        let errorDesc = 'Payment failed. Please try again.';
+        
+        if (errorCode === 'BAD_REQUEST_ERROR') {
+          errorDesc = 'Invalid payment details. Please check and try again.';
+        } else if (errorCode === 'GATEWAY_ERROR') {
+          errorDesc = 'Payment gateway error. Please try a different payment method.';
+        } else if (errorCode === 'NETWORK_ERROR') {
+          errorDesc = 'Network error. Please check your connection and try again.';
+        } else if (errorReason === 'payment_failed') {
+          errorDesc = errorDescription || 'Payment could not be processed. Please try again or use a different payment method.';
+        }
+        
+        toast.error(errorMessage, {
+          duration: 6000,
+          description: `${errorDesc} Your order was not placed. If money was deducted, it will be refunded within 5-7 business days.`,
         });
       });
-
-      // Create and download the file
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `VASTRAM-Orders-${Date.now()}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
       
-      toast.success('Orders exported successfully!');
+      razorpay.open();
     } catch (error) {
-      console.error('Error exporting orders:', error);
-      toast.error('Failed to export orders');
+      console.error('Payment error:', error);
+      toast.error('Failed to process payment');
+      setIsSubmitting(false);
     }
   };
 
-  const handleQuickReset = async () => {
-    // Calculate stats before showing confirmation
-    const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-    const totalCustomers = new Set(orders.map(o => o.customerInfo.email)).size;
-    const totalProducts = orders.reduce((sum, order) => sum + order.items.reduce((s, item) => s + item.quantity, 0), 0);
-    
-    // Show summary before deletion
-    const summary = `
-📊 Current Dashboard Stats:
-• Total Orders: ${orders.length}
-• Total Revenue: ₹${totalRevenue.toFixed(2)}
-• Total Customers: ${totalCustomers}
-• Products Sold: ${totalProducts}
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-⚠️ ALL DATA WILL BE PERMANENTLY DELETED!
-    `.trim();
-
-    if (!confirm(`${summary}\n\n⚠️ DELETE ALL ORDERS?\n\nThis action CANNOT be undone!`)) {
-      console.log('User cancelled deletion');
+    // Validate form
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone ||
+        !formData.address || !formData.city || !formData.state || !formData.zipCode) {
+      toast.error('Please fill in all fields');
       return;
     }
 
-    if (!confirm(`Are you ABSOLUTELY SURE?\n\nThis will reset EVERYTHING to 0!`)) {
-      console.log('User cancelled final confirmation');
+    // Validate stock for all items in cart
+    const outOfStockItems = items.filter(item => {
+      const stock = getStock(item.id);
+      return stock < item.quantity;
+    });
+
+    if (outOfStockItems.length > 0) {
+      const itemNames = outOfStockItems.map(item => item.name).join(', ');
+      toast.error(`Some items are out of stock: ${itemNames}`, {
+        duration: 5000,
+        description: 'Please remove out-of-stock items from your cart and try again.'
+      });
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
-      console.log('🗑️ Starting deletion of all orders...');
-      console.log('📊 Current order count:', orders.length);
-      
-      const url = `https://${projectId}.supabase.co/functions/v1/make-server-e222e178/orders/delete-all`;
-      console.log('🌐 Calling DELETE endpoint:', url);
-      
-      const response = await fetch(url, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${publicAnonKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const total = getTotalPrice();
 
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response ok:', response.ok);
-      
-      const data = await response.json();
-      console.log('📦 Response data:', JSON.stringify(data, null, 2));
+      // Generate temporary order ID
+      const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      if (response.ok && data.success) {
-        console.log(`✅ Successfully deleted ${data.count} orders`);
-        
-        // Immediately clear local state FIRST
-        setOrders([]);
-        setFilteredOrders([]);
-        setSelectedOrder(null);
-        setViewOrderDetails(null);
-        
-        toast.success(`✅ Dashboard Reset Complete! Deleted ${data.count} orders`);
-        
-        // Then fetch fresh data from server
-        console.log('🔄 Fetching fresh data from server...');
-        await fetchOrders();
-        
-        console.log('✅ Dashboard reset complete!');
-      } else {
-        const errorMsg = data.error || 'Failed to reset dashboard';
-        toast.error(errorMsg);
-        console.error('❌ Delete failed:', errorMsg);
-        console.error('❌ Full response:', data);
-      }
+      // Open Razorpay payment (order will be created only after successful payment)
+      await handlePayment(orderId, total);
     } catch (error) {
-      console.error('❌ Error resetting dashboard:', error);
-      console.error('❌ Error details:', error.message, error.stack);
-      toast.error(`Error resetting dashboard: ${error.message}`);
+      console.error('Error during checkout:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to process order');
+      setIsSubmitting(false);
     }
   };
 
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-blue-100 text-blue-800 border border-blue-300';
-      case 'processing':
-        return 'bg-yellow-100 text-yellow-800 border border-yellow-300';
-      case 'shipped':
-        return 'bg-green-100 text-green-800 border border-green-300';
-      case 'delivered':
-        return 'bg-purple-100 text-purple-800 border border-purple-300';
-      default:
-        return 'bg-gray-100 text-gray-800 border border-gray-300';
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const filterOrders = (query: string) => {
-    if (!query) {
-      setFilteredOrders(orders);
-      return;
-    }
-    const lowerCaseQuery = query.toLowerCase();
-    const filtered = orders.filter(order => {
-      return (
-        order.orderId.toLowerCase().includes(lowerCaseQuery) ||
-        order.customerInfo.firstName.toLowerCase().includes(lowerCaseQuery) ||
-        order.customerInfo.lastName.toLowerCase().includes(lowerCaseQuery) ||
-        order.customerInfo.email.toLowerCase().includes(lowerCaseQuery) ||
-        order.customerInfo.phone.includes(lowerCaseQuery) ||
-        order.status.toLowerCase().includes(lowerCaseQuery)
-      );
-    });
-    setFilteredOrders(filtered);
-  };
-
-  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-  const totalCustomers = new Set(orders.map(o => o.customerInfo.email)).size;
-  const totalProducts = orders.reduce((sum, order) => sum + order.items.reduce((s, item) => s + item.quantity, 0), 0);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading admin dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  const subtotal = getTotalPrice();
+  const shipping = 0;
+  const total = subtotal + shipping;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Admin Header */}
-      <div className="bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <Shield className="w-8 h-8" />
-              <div>
-                <h1 className="text-2xl font-bold">VASTRAM Admin</h1>
-                <p className="text-sm text-red-100">Order Management System</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={() => navigate('/')}
-                variant="outline"
-                className="bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50"
-              >
-                Switch User Type
-              </Button>
-              <Button
-                onClick={handleLogout}
-                variant="outline"
-                className="bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50 flex items-center gap-2"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </Button>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12"
+        >
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white px-6 py-2 rounded-full mb-4">
+            <ShieldCheck className="w-5 h-5" />
+            <span className="text-sm font-medium">Secure Checkout</span>
           </div>
-        </div>
-      </div>
+          <h1 className="text-4xl md:text-5xl bg-gradient-to-r from-amber-800 via-amber-600 to-orange-600 bg-clip-text text-transparent mb-2">
+            Complete Your Order
+          </h1>
+          <p className="text-gray-600">Fill in your details to proceed with your purchase</p>
+        </motion.div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Statistics Dashboard */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Total Orders</p>
-                <p className="text-3xl font-bold text-gray-900">{orders.length}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Checkout Form */}
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="lg:col-span-2"
+          >
+            <div className="bg-white rounded-2xl shadow-lg border border-amber-100 overflow-hidden">
+              {/* Form Header */}
+              <div className="bg-gradient-to-r from-amber-600 to-orange-600 px-8 py-6">
+                <h2 className="text-2xl text-white flex items-center gap-2">
+                  <MapPin className="w-6 h-6" />
+                  Shipping Information
+                </h2>
+                <p className="text-amber-100 text-sm mt-1">We'll deliver your order to this address</p>
               </div>
-              <div className="bg-blue-100 p-3 rounded-lg">
-                <ShoppingBag className="w-8 h-8 text-blue-600" />
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
-                <p className="text-3xl font-bold text-gray-900">₹{totalRevenue.toFixed(2)}</p>
-              </div>
-              <div className="bg-green-100 p-3 rounded-lg">
-                <DollarSign className="w-8 h-8 text-green-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Total Customers</p>
-                <p className="text-3xl font-bold text-gray-900">{totalCustomers}</p>
-              </div>
-              <div className="bg-purple-100 p-3 rounded-lg">
-                <Users className="w-8 h-8 text-purple-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-orange-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Products Sold</p>
-                <p className="text-3xl font-bold text-gray-900">{totalProducts}</p>
-              </div>
-              <div className="bg-orange-100 p-3 rounded-lg">
-                <TrendingUp className="w-8 h-8 text-orange-600" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Order Status Summary */}
-        <div className="bg-white rounded-xl shadow-md mb-8 p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-800">Order Status Summary</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 rounded-lg p-4 text-center">
-              <p className="text-sm text-blue-600 mb-1">Pending</p>
-              <p className="text-2xl font-bold text-blue-900">
-                {orders.filter(o => o.status === 'pending').length}
-              </p>
-            </div>
-            <div className="bg-yellow-50 rounded-lg p-4 text-center">
-              <p className="text-sm text-yellow-600 mb-1">Processing</p>
-              <p className="text-2xl font-bold text-yellow-900">
-                {orders.filter(o => o.status === 'processing').length}
-              </p>
-            </div>
-            <div className="bg-green-50 rounded-lg p-4 text-center">
-              <p className="text-sm text-green-600 mb-1">Shipped</p>
-              <p className="text-2xl font-bold text-green-900">
-                {orders.filter(o => o.status === 'shipped').length}
-              </p>
-            </div>
-            <div className="bg-purple-50 rounded-lg p-4 text-center">
-              <p className="text-sm text-purple-600 mb-1">Delivered</p>
-              <p className="text-2xl font-bold text-purple-900">
-                {orders.filter(o => o.status === 'delivered').length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              onClick={fetchOrders}
-              variant="outline"
-              className="flex items-center justify-center gap-2"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Refresh Orders
-            </Button>
-            <Button
-              onClick={handleExportToExcel}
-              className="bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Export to Excel
-            </Button>
-            <Button
-              onClick={() => navigate('/admin/add-product')}
-              className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 flex items-center justify-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Add New Product
-            </Button>
-            <Button
-              onClick={() => navigate('/admin/migrate-images')}
-              className="bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-2"
-            >
-              <Upload className="w-4 h-4" />
-              Migrate Product Images
-            </Button>
-            <Button
-              onClick={handleQuickReset}
-              className="bg-red-600 hover:bg-red-700 flex items-center justify-center gap-2"
-            >
-              <Trash2 className="w-4 h-4" />
-              Quick Reset Dashboard
-            </Button>
-          </div>
-        </div>
-
-        {/* Manage Categories & Badges */}
-        <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-800">Manage Categories & Badges</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Categories */}
-            <div>
-              <Label className="flex items-center gap-2 mb-2">
-                <Tag className="w-4 h-4 text-orange-600" />
-                Categories
-              </Label>
-              <div className="flex gap-2 mb-3">
-                <Input
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  placeholder="e.g., Footwear"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddCategory();
-                    }
-                  }}
-                />
-                <Button type="button" onClick={handleAddCategory} className="bg-orange-600 hover:bg-orange-700 flex-shrink-0">
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {categoryList.map((category) => (
-                  <span
-                    key={category}
-                    className="flex items-center gap-2 bg-orange-100 text-orange-800 px-3 py-1.5 rounded-full text-sm font-medium"
-                  >
-                    {category}
-                    {category !== 'All' && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveCategory(category)}
-                        className="hover:text-red-600"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    )}
-                  </span>
-                ))}
-              </div>
-              <p className="text-xs text-gray-500 mt-3">
-                New categories appear instantly in Admin &gt; Add Product and in the Products page filter.
-              </p>
-            </div>
-
-            {/* Badges */}
-            <div>
-              <Label className="flex items-center gap-2 mb-2">
-                <Award className="w-4 h-4 text-amber-600" />
-                Badges
-              </Label>
-              <div className="flex gap-2 mb-3">
-                <Input
-                  value={newBadgeName}
-                  onChange={(e) => setNewBadgeName(e.target.value)}
-                  placeholder="e.g., LIMITED"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddBadge();
-                    }
-                  }}
-                />
-                <Button type="button" onClick={handleAddBadge} className="bg-amber-600 hover:bg-amber-700 flex-shrink-0">
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {badgeList.map((badge) => (
-                  <span
-                    key={badge}
-                    className="flex items-center gap-2 bg-amber-100 text-amber-800 px-3 py-1.5 rounded-full text-sm font-medium"
-                  >
-                    {badge}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveBadge(badge)}
-                      className="hover:text-red-600"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-              <p className="text-xs text-gray-500 mt-3">
-                New badges appear instantly as options in Admin &gt; Add Product.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Search Bar */}
-        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
-          <div className="flex items-center gap-3">
-            <Search className="w-5 h-5 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search by Order ID, Customer Name, Email, Phone, or Status..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                filterOrders(e.target.value);
-              }}
-              className="flex-1"
-            />
-            {searchQuery && (
-              <Button
-                onClick={() => {
-                  setSearchQuery('');
-                  setFilteredOrders(orders);
-                }}
-                variant="outline"
-                size="sm"
-              >
-                Clear
-              </Button>
-            )}
-          </div>
-          {searchQuery && (
-            <p className="text-sm text-gray-600 mt-2">
-              Found {filteredOrders.length} order(s) matching "{searchQuery}"
-            </p>
-          )}
-        </div>
-
-        {/* Orders List */}
-        {orders.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-md p-12 text-center">
-            <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl text-gray-600 mb-2">No orders yet</h2>
-            <p className="text-gray-500">Orders will appear here once customers start placing them.</p>
-          </div>
-        ) : filteredOrders.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-md p-12 text-center">
-            <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl text-gray-600 mb-2">No orders found</h2>
-            <p className="text-gray-500">Try a different search term</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredOrders.map((order) => (
-              <div key={order.orderId} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4">
-                  <div className="mb-4 lg:mb-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-bold text-xl text-gray-900">{order.orderId}</h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(order.status)}`}>
-                        {order.status.toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <User className="w-4 h-4" />
-                        <span className="font-medium">{order.customerInfo.firstName} {order.customerInfo.lastName}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Mail className="w-4 h-4" />
-                        <span>{order.customerInfo.email}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Phone className="w-4 h-4" />
-                        <span>{order.customerInfo.phone}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="w-4 h-4" />
-                        <span>{formatDate(order.createdAt)}</span>
-                      </div>
-                    </div>
+              <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                {/* Personal Information */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-amber-800 mb-4">
+                    <User className="w-5 h-5" />
+                    <h3 className="font-semibold">Personal Details</h3>
                   </div>
-                  <div className="flex flex-col items-end gap-3">
-                    <div className="text-3xl font-bold text-green-600">₹{order.total.toFixed(2)}</div>
-                    <Button
-                      onClick={() => setViewOrderDetails(order)}
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2"
-                    >
-                      <Eye className="w-4 h-4" />
-                      View Details
-                    </Button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <motion.div whileFocus={{ scale: 1.01 }}>
+                      <Label htmlFor="firstName" className="text-gray-700">First Name *</Label>
+                      <Input
+                        id="firstName"
+                        required
+                        value={formData.firstName}
+                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                        className="mt-1 border-amber-200 focus:border-amber-500 focus:ring-amber-500"
+                        placeholder="John"
+                      />
+                    </motion.div>
+                    <motion.div whileFocus={{ scale: 1.01 }}>
+                      <Label htmlFor="lastName" className="text-gray-700">Last Name *</Label>
+                      <Input
+                        id="lastName"
+                        required
+                        value={formData.lastName}
+                        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                        className="mt-1 border-amber-200 focus:border-amber-500 focus:ring-amber-500"
+                        placeholder="Doe"
+                      />
+                    </motion.div>
                   </div>
                 </div>
 
-                <div className="border-t pt-4 mt-4">
-                  <h4 className="font-semibold mb-3 text-gray-800">Purchased Items ({order.items.length})</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {order.items.map((item, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-3 flex justify-between items-center">
-                        <div>
-                          <p className="font-medium text-gray-900">{item.name}</p>
-                          <p className="text-sm text-gray-600">
-                            {item.size && `Size: ${item.size} • `}Qty: {item.quantity}
-                          </p>
+                {/* Contact Information */}
+                <div className="space-y-4 pt-4 border-t border-amber-100">
+                  <div className="flex items-center gap-2 text-amber-800 mb-4">
+                    <Mail className="w-5 h-5" />
+                    <h3 className="font-semibold">Contact Details</h3>
+                  </div>
+                  <motion.div whileFocus={{ scale: 1.01 }}>
+                    <Label htmlFor="email" className="text-gray-700">Email Address *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="mt-1 border-amber-200 focus:border-amber-500 focus:ring-amber-500"
+                      placeholder="john.doe@example.com"
+                    />
+                  </motion.div>
+
+                  <motion.div whileFocus={{ scale: 1.01 }}>
+                    <Label htmlFor="phone" className="text-gray-700 flex items-center gap-2">
+                      <Phone className="w-4 h-4" />
+                      Phone Number *
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      required
+                      placeholder="+91 9876543210"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="mt-1 border-amber-200 focus:border-amber-500 focus:ring-amber-500"
+                    />
+                  </motion.div>
+                </div>
+
+                {/* Shipping Address */}
+                <div className="space-y-4 pt-4 border-t border-amber-100">
+                  <div className="flex items-center gap-2 text-amber-800 mb-4">
+                    <MapPin className="w-5 h-5" />
+                    <h3 className="font-semibold">Delivery Address</h3>
+                  </div>
+                  <motion.div whileFocus={{ scale: 1.01 }}>
+                    <Label htmlFor="address" className="text-gray-700">Street Address *</Label>
+                    <Input
+                      id="address"
+                      required
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      className="mt-1 border-amber-200 focus:border-amber-500 focus:ring-amber-500"
+                      placeholder="123 Main Street, Apartment 4B"
+                    />
+                  </motion.div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <motion.div whileFocus={{ scale: 1.01 }}>
+                      <Label htmlFor="city" className="text-gray-700">City *</Label>
+                      <Input
+                        id="city"
+                        required
+                        value={formData.city}
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                        className="mt-1 border-amber-200 focus:border-amber-500 focus:ring-amber-500"
+                        placeholder="Pune"
+                      />
+                    </motion.div>
+                    <motion.div whileFocus={{ scale: 1.01 }}>
+                      <Label htmlFor="state" className="text-gray-700">State *</Label>
+                      <Input
+                        id="state"
+                        required
+                        value={formData.state}
+                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                        className="mt-1 border-amber-200 focus:border-amber-500 focus:ring-amber-500"
+                        placeholder="Maharashtra"
+                      />
+                    </motion.div>
+                  </div>
+
+                  <motion.div whileFocus={{ scale: 1.01 }} className="md:w-1/2">
+                    <Label htmlFor="zipCode" className="text-gray-700">PIN Code *</Label>
+                    <Input
+                      id="zipCode"
+                      required
+                      value={formData.zipCode}
+                      onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
+                      className="mt-1 border-amber-200 focus:border-amber-500 focus:ring-amber-500"
+                      placeholder="411015"
+                    />
+                  </motion.div>
+                </div>
+
+                {/* Payment Method */}
+                <div className="pt-6 border-t border-amber-100">
+                  <h3 className="text-xl mb-4 flex items-center gap-2 text-amber-800">
+                    <Wallet className="w-6 h-6" />
+                    Payment Method
+                  </h3>
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="relative bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 overflow-hidden"
+                  >
+                    {/* Decorative Elements */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200 rounded-full blur-3xl opacity-20"></div>
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-200 rounded-full blur-2xl opacity-20"></div>
+                    
+                    <div className="relative">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-2 rounded-lg">
+                          <ShieldCheck className="w-6 h-6 text-white" />
                         </div>
-                        <p className="font-bold text-amber-700">₹{(item.price * item.quantity).toFixed(2)}</p>
+                        <div>
+                          <h4 className="font-semibold text-blue-900">Razorpay Secure Payment</h4>
+                          <p className="text-xs text-blue-700">Protected by industry-leading security</p>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                {selectedOrder?.orderId === order.orderId ? (
-                  <div className="border-t pt-4 mt-4 bg-gray-50 rounded-lg p-4">
-                    <h4 className="font-semibold mb-3 text-gray-800">Update Order Status</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      <div>
-                        <Label htmlFor={`status-${order.orderId}`}>Status</Label>
-                        <select
-                          id={`status-${order.orderId}`}
-                          value={status}
-                          onChange={(e) => setStatus(e.target.value)}
-                          className="w-full px-3 py-2 border rounded-md"
+                      <p className="text-sm text-blue-800 mb-4">
+                        Choose from multiple payment options at checkout
+                      </p>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <motion.div 
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          className="flex items-center gap-2 bg-white px-4 py-3 rounded-lg border-2 border-blue-200 shadow-sm"
                         >
-                          <option value="">Select status</option>
-                          <option value="pending">Pending</option>
-                          <option value="processing">Processing</option>
-                          <option value="shipped">Shipped</option>
-                          <option value="delivered">Delivered</option>
-                        </select>
-                      </div>
-                      <div>
-                        <Label htmlFor={`tracking-${order.orderId}`}>Tracking Number</Label>
-                        <Input
-                          id={`tracking-${order.orderId}`}
-                          value={trackingNumber}
-                          onChange={(e) => setTrackingNumber(e.target.value)}
-                          placeholder="Enter tracking number"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`tracking-url-${order.orderId}`}>Tracking URL</Label>
-                        <Input
-                          id={`tracking-url-${order.orderId}`}
-                          value={trackingUrl}
-                          onChange={(e) => setTrackingUrl(e.target.value)}
-                          placeholder="Enter tracking URL"
-                        />
+                          <Smartphone className="w-5 h-5 text-purple-600" />
+                          <span className="text-sm font-medium text-gray-700">UPI</span>
+                        </motion.div>
+                        <motion.div 
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          className="flex items-center gap-2 bg-white px-4 py-3 rounded-lg border-2 border-blue-200 shadow-sm"
+                        >
+                          <CreditCard className="w-5 h-5 text-blue-600" />
+                          <span className="text-sm font-medium text-gray-700">Cards</span>
+                        </motion.div>
+                        <motion.div 
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          className="flex items-center gap-2 bg-white px-4 py-3 rounded-lg border-2 border-blue-200 shadow-sm"
+                        >
+                          <Wallet className="w-5 h-5 text-green-600" />
+                          <span className="text-sm font-medium text-gray-700">Wallets</span>
+                        </motion.div>
+                        <motion.div 
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          className="bg-white px-4 py-3 rounded-lg border-2 border-blue-200 shadow-sm"
+                        >
+                          <span className="text-sm font-medium text-gray-700">Net Banking</span>
+                        </motion.div>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => handleUpdateOrder(order.orderId)}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        Save Changes
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setSelectedOrder(null);
-                          setTrackingNumber('');
-                          setTrackingUrl('');
-                          setStatus('');
-                        }}
-                        variant="outline"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
+                  </motion.div>
+                </div>
+
+                {/* Submit Button */}
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
                   <Button
-                    onClick={() => {
-                      setSelectedOrder(order);
-                      setStatus(order.status);
-                      setTrackingNumber(order.trackingNumber || '');
-                      setTrackingUrl(order.trackingUrl || '');
-                    }}
-                    variant="outline"
-                    className="mt-4"
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg shadow-amber-200 border-0 h-14 text-lg relative overflow-hidden group"
+                    size="lg"
                   >
-                    Update Order
+                    {/* Button Shine Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                    
+                    {isSubmitting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        Processing Your Order...
+                      </>
+                    ) : razorpayKeyId ? (
+                      <span className="flex items-center gap-2">
+                        <Sparkles className="w-5 h-5" />
+                        Pay ₹{total.toFixed(2)}
+                        <ShieldCheck className="w-5 h-5" />
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <Sparkles className="w-5 h-5" />
+                        Place Order ₹{total.toFixed(2)}
+                        <span className="text-xs bg-white/20 px-2 py-1 rounded-full">Payment Coming Soon</span>
+                      </span>
+                    )}
                   </Button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+                </motion.div>
 
-      {/* Order Details Modal */}
-      {viewOrderDetails && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-red-600 to-orange-600 text-white p-6 flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Order Details</h2>
-              <button
-                onClick={() => setViewOrderDetails(null)}
-                className="p-2 hover:bg-white/20 rounded-full transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
+                {/* Security Badge */}
+                <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+                  <ShieldCheck className="w-4 h-4 text-green-600" />
+                  <span>Your information is protected with SSL encryption</span>
+                </div>
+              </form>
             </div>
-            
-            <div className="p-6 space-y-6">
-              {/* Order Info */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-semibold text-lg mb-3">Order Information</h3>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-600">Order ID</p>
-                    <p className="font-semibold">{viewOrderDetails.orderId}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Status</p>
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(viewOrderDetails.status)}`}>
-                      {viewOrderDetails.status.toUpperCase()}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Order Date</p>
-                    <p className="font-semibold">{formatDate(viewOrderDetails.createdAt)}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Total Amount</p>
-                    <p className="font-semibold text-green-600 text-lg">₹{viewOrderDetails.total.toFixed(2)}</p>
-                  </div>
-                </div>
+          </motion.div>
+
+          {/* Order Summary - Sticky */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="lg:col-span-1"
+          >
+            <div className="bg-white rounded-2xl shadow-lg border border-amber-100 overflow-hidden sticky top-24">
+              {/* Summary Header */}
+              <div className="bg-gradient-to-r from-amber-600 to-orange-600 px-6 py-5">
+                <h2 className="text-2xl text-white flex items-center gap-2">
+                  <Sparkles className="w-6 h-6" />
+                  Order Summary
+                </h2>
               </div>
 
-              {/* Customer Info */}
-              <div className="bg-blue-50 rounded-lg p-4">
-                <h3 className="font-semibold text-lg mb-3">Customer Information</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-blue-600" />
-                    <span className="font-semibold">{viewOrderDetails.customerInfo.firstName} {viewOrderDetails.customerInfo.lastName}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-blue-600" />
-                    <span>{viewOrderDetails.customerInfo.email}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-blue-600" />
-                    <span>{viewOrderDetails.customerInfo.phone}</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <MapPin className="w-4 h-4 text-blue-600 mt-1" />
-                    <div>
-                      <p>{viewOrderDetails.customerInfo.address}</p>
-                      <p>{viewOrderDetails.customerInfo.city}, {viewOrderDetails.customerInfo.state} {viewOrderDetails.customerInfo.zipCode}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Items */}
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Items Purchased</h3>
-                <div className="space-y-2">
-                  {viewOrderDetails.items.map((item, index) => (
-                    <div key={index} className="bg-amber-50 rounded-lg p-4 flex justify-between items-center">
+              <div className="p-6">
+                {/* Items */}
+                <div className="space-y-4 mb-6 max-h-64 overflow-y-auto">
+                  {items.map((item, index) => (
+                    <motion.div 
+                      key={`${item.id}-${item.size}`}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex gap-4 p-3 bg-amber-50 rounded-lg border border-amber-100"
+                    >
+                      <ImageWithFallback
+                        src={item.image}
+                        alt={item.name}
+                        className="w-20 h-20 object-cover rounded-lg shadow-sm"
+                      />
                       <div className="flex-1">
-                        <p className="font-semibold text-gray-900">{item.name}</p>
-                        <p className="text-sm text-gray-600">
-                          {item.size && `Size: ${item.size} • `}
-                          Unit Price: ₹{item.price.toFixed(2)} • Quantity: {item.quantity}
-                        </p>
-                        {item.id && (
-                          <p className="text-xs text-gray-500 mt-1 font-mono">
-                            Product ID: {item.id}
-                          </p>
+                        <h3 className="font-semibold text-gray-800 leading-tight">{item.name}</h3>
+                        {item.size && (
+                          <p className="text-sm text-amber-700 mt-1">Size: {item.size}</p>
                         )}
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="text-sm text-gray-600">Qty: {item.quantity}</span>
+                          <span className="font-bold text-amber-700">₹{(item.price * item.quantity).toFixed(2)}</span>
+                        </div>
                       </div>
-                      <p className="font-bold text-amber-700 text-lg">₹{(item.price * item.quantity).toFixed(2)}</p>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
-                <div className="border-t-2 mt-4 pt-4 flex justify-between items-center">
-                  <span className="text-xl font-bold">Total</span>
-                  <span className="text-2xl font-bold text-green-600">₹{viewOrderDetails.total.toFixed(2)}</span>
+
+                {/* Price Breakdown */}
+                <div className="border-t-2 border-amber-100 pt-4 space-y-3">
+                  <div className="flex justify-between text-gray-700">
+                    <span>Subtotal</span>
+                    <span className="font-semibold">₹{subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-700">
+                    <span>Shipping</span>
+                    <span className="font-semibold">
+                      {shipping === 0 ? (
+                        <span className="text-green-600 flex items-center gap-1">
+                          FREE 🎉
+                        </span>
+                      ) : (
+                        `₹${shipping.toFixed(2)}`
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xl pt-3 border-t-2 border-amber-200">
+                    <span className="font-bold text-gray-800">Total</span>
+                    <span className="font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                      ₹{total.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Trust Badges */}
+                <div className="mt-6 pt-6 border-t border-amber-100 space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <ShieldCheck className="w-4 h-4 text-green-600" />
+                    <span>Secure Payment</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Sparkles className="w-4 h-4 text-amber-600" />
+                    <span>Quality Guaranteed</span>
+                  </div>
                 </div>
               </div>
-
-              {/* Tracking Info */}
-              {viewOrderDetails.trackingNumber && (
-                <div className="bg-green-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-lg mb-2">Tracking Information</h3>
-                  <p className="text-sm text-gray-700">
-                    <strong>Tracking Number:</strong> {viewOrderDetails.trackingNumber}
-                  </p>
-                  {viewOrderDetails.trackingUrl && (
-                    <a
-                      href={viewOrderDetails.trackingUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline text-sm"
-                    >
-                      Track Package →
-                    </a>
-                  )}
-                </div>
-              )}
             </div>
-          </div>
+          </motion.div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

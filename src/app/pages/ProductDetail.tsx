@@ -20,6 +20,32 @@ export function ProductDetail() {
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  // Defensive helper — only calls getStockForSize if it actually exists on
+  // the context. Prevents "X is not a function" crashes if the provider
+  // doesn't implement per-size stock tracking.
+  const getSizeStock = useCallback(
+    (productId: string, size: string): number | null => {
+      if (
+        stockContext &&
+        typeof (stockContext as any).getStockForSize === 'function'
+      ) {
+        return (stockContext as any).getStockForSize(productId, size);
+      }
+      return null;
+    },
+    [stockContext]
+  );
+
+  const getTotalStockSafe = useCallback(
+    (productId: string, fallback: number): number => {
+      if (stockContext && typeof (stockContext as any).getStock === 'function') {
+        return (stockContext as any).getStock(productId);
+      }
+      return fallback;
+    },
+    [stockContext]
+  );
+
   // All images for the gallery
   const allImages: string[] = useMemo(
     () =>
@@ -30,14 +56,10 @@ export function ProductDetail() {
   );
 
   // Total stock (whole product)
-  const totalStock = product
-    ? (stockContext ? stockContext.getStock(product.id) : (product.stock ?? 10))
-    : 0;
+  const totalStock = product ? getTotalStockSafe(product.id, product.stock ?? 10) : 0;
 
   // Stock for selected size
-  const sizeStock = product && selectedSize && stockContext
-    ? stockContext.getStockForSize(product.id, selectedSize)
-    : null;
+  const sizeStock = product && selectedSize ? getSizeStock(product.id, selectedSize) : null;
 
   const displayStock = sizeStock !== null ? sizeStock : totalStock;
 
@@ -239,9 +261,7 @@ export function ProductDetail() {
                 <label className="block mb-3 font-medium">Select Size</label>
                 <div className="flex flex-wrap gap-2">
                   {product.sizes.map(size => {
-                    const szQty = stockContext
-                      ? stockContext.getStockForSize(product.id, size)
-                      : null;
+                    const szQty = getSizeStock(product.id, size);
                     const outOfStock = szQty !== null && szQty <= 0;
 
                     return (

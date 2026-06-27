@@ -3,20 +3,22 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
-import { Download, Package, Truck, MapPin, RefreshCw, Database, Search, Trash2 } from 'lucide-react';
+import { Download, Package, Truck, MapPin, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { projectId, publicAnonKey } from '../../../utils/supabase/info';
 import { products } from '../data/products';
 
+interface OrderItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  size?: string;
+  image?: string;
+}
+
 interface Order {
   orderId: string;
-  items: Array<{
-    id: string;  // Changed from number to string to match product IDs
-    name: string;
-    price: number;
-    quantity: number;
-    size?: string;
-    image?: string;
-  }>;
+  items: OrderItem[];
   customerInfo: {
     firstName: string;
     lastName: string;
@@ -41,6 +43,31 @@ interface Order {
   updatedAt: string;
 }
 
+// Resolve product name: prefer item.name, fallback to lookup by id
+const resolveProductName = (item: OrderItem): string => {
+  if (item.name && item.name.trim() && !isLikelyId(item.name)) {
+    return item.name;
+  }
+  const found = products.find(p => p.id === item.id);
+  return found ? found.name : item.name || `Product (${item.id.slice(0, 8)}…)`;
+};
+
+// Detect if a "name" field accidentally contains an ID (alphanumeric with dashes, no spaces)
+const isLikelyId = (str: string): boolean => /^[\w-]{10,}$/.test(str) && !str.includes(' ');
+
+// Get product image: from order item, or from products list
+const resolveProductImage = (item: OrderItem): string => {
+  if (item.image && !item.image.includes('r2.dev')) return item.image;
+  const found = products.find(p => p.id === item.id);
+  if (found) {
+    if (found.image.includes('r2.dev')) {
+      return 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop&q=80';
+    }
+    return found.image;
+  }
+  return 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=80&h=80&fit=crop';
+};
+
 export function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,54 +76,22 @@ export function AdminOrders() {
   const [trackingUrl, setTrackingUrl] = useState('');
   const [status, setStatus] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
-  // Helper function to get product image by ID
-  const getProductImage = (productId: string): string => {
-    console.log('Looking for product with ID:', productId);
-    const product = products.find(p => p.id === productId);
-    
-    if (product) {
-      console.log('Found product:', product.name, product.image);
-      
-      // Check if the image is from R2 storage - these don't work due to CORS
-      if (product.image.includes('r2.dev')) {
-        console.log('⚠️ R2 image detected - using fallback T-shirt image instead');
-        // Use a generic T-shirt image as fallback for R2 images
-        return 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop&q=80';
-      }
-      
-      return product.image;
-    }
-    
-    console.log('Product not found, using fallback image');
-    return 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=80&h=80&fit=crop';
-  };
-
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  useEffect(() => { fetchOrders(); }, []);
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-e222e178/orders`,
-        {
-          headers: {
-            'Authorization': `Bearer ${publicAnonKey}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${publicAnonKey}` } }
       );
-
       const data = await response.json();
-
       if (response.ok && data.success) {
-        // Sort orders by creation date (newest first)
-        const sortedOrders = data.orders.sort(
+        const sorted = data.orders.sort(
           (a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-        setOrders(sortedOrders);
+        setOrders(sorted);
       } else {
         toast.error('Failed to fetch orders');
       }
@@ -114,20 +109,11 @@ export function AdminOrders() {
         `https://${projectId}.supabase.co/functions/v1/make-server-e222e178/orders/${orderId}`,
         {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${publicAnonKey}`,
-          },
-          body: JSON.stringify({
-            status,
-            trackingNumber,
-            trackingUrl,
-          }),
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${publicAnonKey}` },
+          body: JSON.stringify({ status, trackingNumber, trackingUrl }),
         }
       );
-
       const data = await response.json();
-
       if (response.ok && data.success) {
         toast.success('Order updated successfully');
         setSelectedOrder(null);
@@ -145,25 +131,15 @@ export function AdminOrders() {
   };
 
   const handleDeleteOrder = async (orderId: string) => {
-    if (!confirm(`Are you sure you want to delete order ${orderId}? This action cannot be undone.`)) {
-      return;
-    }
-
+    if (!confirm(`Delete order ${orderId}? This cannot be undone.`)) return;
     try {
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-e222e178/orders/${orderId}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${publicAnonKey}`,
-          },
-        }
+        { method: 'DELETE', headers: { Authorization: `Bearer ${publicAnonKey}` } }
       );
-
       const data = await response.json();
-
       if (response.ok && data.success) {
-        toast.success('Order deleted successfully');
+        toast.success('Order deleted');
         fetchOrders();
       } else {
         toast.error(data.error || 'Failed to delete order');
@@ -175,29 +151,16 @@ export function AdminOrders() {
   };
 
   const handleDeleteAllOrders = async () => {
-    if (!confirm(`⚠️ WARNING: Delete ALL ${orders.length} orders? This action CANNOT be undone!`)) {
-      return;
-    }
-
-    if (!confirm(`Are you ABSOLUTELY SURE? This will permanently delete all ${orders.length} orders!`)) {
-      return;
-    }
-
+    if (!confirm(`⚠️ Delete ALL ${orders.length} orders? Cannot be undone!`)) return;
+    if (!confirm(`ABSOLUTELY SURE? All ${orders.length} orders will be permanently deleted.`)) return;
     try {
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-e222e178/orders/delete-all`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${publicAnonKey}`,
-          },
-        }
+        { method: 'DELETE', headers: { Authorization: `Bearer ${publicAnonKey}` } }
       );
-
       const data = await response.json();
-
       if (response.ok && data.success) {
-        toast.success(`Successfully deleted ${data.count} orders`);
+        toast.success(`Deleted ${data.count} orders`);
         fetchOrders();
       } else {
         toast.error(data.error || 'Failed to delete all orders');
@@ -216,51 +179,42 @@ export function AdminOrders() {
     toast.success('Downloading orders export...');
   };
 
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-blue-100 text-blue-800';
-      case 'processing':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'shipped':
-        return 'bg-green-100 text-green-800';
-      case 'delivered':
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const getStatusBadgeColor = (s: string) => {
+    switch (s) {
+      case 'pending': return 'bg-blue-100 text-blue-800';
+      case 'processing': return 'bg-yellow-100 text-yellow-800';
+      case 'shipped': return 'bg-green-100 text-green-800';
+      case 'delivered': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleString('en-IN', {
+      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
     });
-  };
 
   const filteredOrders = orders.filter(order => {
     if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
+    const q = searchQuery.toLowerCase();
     return (
-      order.orderId.toLowerCase().includes(query) ||
-      order.customerInfo.firstName.toLowerCase().includes(query) ||
-      order.customerInfo.lastName.toLowerCase().includes(query) ||
-      order.customerInfo.email.toLowerCase().includes(query) ||
-      order.customerInfo.phone.includes(query) ||
-      order.status.toLowerCase().includes(query)
+      order.orderId.toLowerCase().includes(q) ||
+      order.customerInfo.firstName.toLowerCase().includes(q) ||
+      order.customerInfo.lastName.toLowerCase().includes(q) ||
+      order.customerInfo.email.toLowerCase().includes(q) ||
+      order.customerInfo.phone.includes(q) ||
+      order.status.toLowerCase().includes(q) ||
+      order.items.some(item => resolveProductName(item).toLowerCase().includes(q))
     );
   });
 
-  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+  const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-amber-700 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-amber-700 mx-auto mb-4" />
           <p className="text-gray-600">Loading orders...</p>
         </div>
       </div>
@@ -270,17 +224,14 @@ export function AdminOrders() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl md:text-4xl mb-2">Order Management</h1>
             <p className="text-gray-600">Manage and track all customer orders</p>
           </div>
           <div className="flex gap-3">
-            <Button
-              onClick={fetchOrders}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
+            <Button onClick={fetchOrders} variant="outline" className="flex items-center gap-2">
               <RefreshCw className="w-4 h-4" />
               Refresh
             </Button>
@@ -291,70 +242,55 @@ export function AdminOrders() {
                 className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
               >
                 <Trash2 className="w-4 h-4" />
-                Delete All Orders
+                Delete All
               </Button>
             )}
-            <Button
-              onClick={handleExportToExcel}
-              className="bg-green-700 hover:bg-green-800 flex items-center gap-2"
-            >
+            <Button onClick={handleExportToExcel} className="bg-green-700 hover:bg-green-800 flex items-center gap-2">
               <Download className="w-4 h-4" />
               Export to Excel
             </Button>
           </div>
         </div>
 
-        {/* Statistics Cards */}
+        {/* Stats */}
         <div className="bg-white rounded-lg shadow-sm mb-8 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="bg-blue-50 rounded-lg p-4">
               <p className="text-sm text-blue-600 mb-1">Total Orders</p>
               <p className="text-3xl font-bold text-blue-900">{orders.length}</p>
             </div>
             <div className="bg-yellow-50 rounded-lg p-4">
               <p className="text-sm text-yellow-600 mb-1">Pending</p>
-              <p className="text-3xl font-bold text-yellow-900">
-                {orders.filter(o => o.status === 'pending').length}
-              </p>
+              <p className="text-3xl font-bold text-yellow-900">{orders.filter(o => o.status === 'pending').length}</p>
             </div>
             <div className="bg-orange-50 rounded-lg p-4">
               <p className="text-sm text-orange-600 mb-1">Processing</p>
-              <p className="text-3xl font-bold text-orange-900">
-                {orders.filter(o => o.status === 'processing').length}
-              </p>
+              <p className="text-3xl font-bold text-orange-900">{orders.filter(o => o.status === 'processing').length}</p>
             </div>
             <div className="bg-green-50 rounded-lg p-4">
               <p className="text-sm text-green-600 mb-1">Shipped</p>
-              <p className="text-3xl font-bold text-green-900">
-                {orders.filter(o => o.status === 'shipped').length}
-              </p>
+              <p className="text-3xl font-bold text-green-900">{orders.filter(o => o.status === 'shipped').length}</p>
             </div>
             <div className="bg-purple-50 rounded-lg p-4">
               <p className="text-sm text-purple-600 mb-1">Total Revenue</p>
-              <p className="text-2xl font-bold text-purple-900">${totalRevenue.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-purple-900">₹{totalRevenue.toFixed(2)}</p>
             </div>
           </div>
         </div>
 
-        {/* Search Bar */}
+        {/* Search */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
           <div className="flex items-center gap-3">
             <Search className="w-5 h-5 text-gray-400" />
             <Input
               type="text"
-              placeholder="Search by Order ID, Customer Name, Email, Phone, or Status..."
+              placeholder="Search by Order ID, Customer Name, Email, Phone, Product Name, or Status..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               className="flex-1"
             />
             {searchQuery && (
-              <Button
-                onClick={() => setSearchQuery('')}
-                variant="outline"
-                size="sm"
-              >
-                Clear
-              </Button>
+              <Button onClick={() => setSearchQuery('')} variant="outline" size="sm">Clear</Button>
             )}
           </div>
           {searchQuery && (
@@ -364,6 +300,7 @@ export function AdminOrders() {
           )}
         </div>
 
+        {/* Order list */}
         {orders.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -378,11 +315,12 @@ export function AdminOrders() {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredOrders.map((order) => (
+            {filteredOrders.map(order => (
               <div key={order.orderId} className="bg-white rounded-lg shadow-sm p-6">
+                {/* Order header */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4">
                   <div className="mb-4 lg:mb-0">
-                    <h3 className="font-semibold text-lg mb-1">{order.orderId}</h3>
+                    <h3 className="font-semibold text-lg mb-1 font-mono text-gray-700">{order.orderId}</h3>
                     <p className="text-sm text-gray-600">
                       {order.customerInfo.firstName} {order.customerInfo.lastName} • {formatDate(order.createdAt)}
                     </p>
@@ -394,33 +332,33 @@ export function AdminOrders() {
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(order.status)}`}>
                       {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                     </span>
-                    <span className="text-lg font-bold">${order.total.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-amber-700">₹{order.total.toFixed(2)}</span>
                   </div>
                 </div>
 
+                {/* Order Items — always shows product NAME */}
                 <div className="mb-4">
-                  <h4 className="font-medium mb-3">Order Items</h4>
+                  <h4 className="font-medium mb-3 text-gray-800">Order Items</h4>
                   <div className="space-y-3">
-                    {order.items.map((item, index) => {
-                      // Get image from order item OR from products database
-                      const productImage = item.image || getProductImage(item.id);
-                      
+                    {order.items.map((item, idx) => {
+                      const productName = resolveProductName(item);
+                      const productImage = resolveProductImage(item);
+
                       return (
-                        <div key={index} className="flex items-center gap-4 bg-gray-50 rounded-lg p-3">
+                        <div key={idx} className="flex items-center gap-4 bg-gray-50 rounded-lg p-3">
                           <img
                             src={productImage}
-                            alt={item.name}
+                            alt={productName}
                             className="w-20 h-20 object-cover rounded-md flex-shrink-0"
-                            onError={(e) => {
-                              console.error(`Failed to load image for ${item.name}:`, productImage);
+                            onError={e => {
                               e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=80&h=80&fit=crop';
                             }}
                           />
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 truncate">{item.name}</p>
-                            <p className="text-sm text-gray-600">
-                              {item.size && <span className="mr-2">Size: {item.size}</span>}
-                              <span>Qty: {item.quantity}</span>
+                            <p className="font-semibold text-gray-900 truncate text-base">{productName}</p>
+                            <p className="text-sm text-gray-500 mt-0.5">
+                              {item.size && <span className="mr-2 bg-gray-200 px-1.5 py-0.5 rounded text-xs">Size: {item.size}</span>}
+                              <span className="text-gray-600">Qty: {item.quantity}</span>
                             </p>
                             <p className="text-sm font-semibold text-amber-700 mt-1">
                               ₹{item.price.toFixed(2)} × {item.quantity} = ₹{(item.price * item.quantity).toFixed(2)}
@@ -430,10 +368,20 @@ export function AdminOrders() {
                       );
                     })}
                   </div>
+
+                  {/* Order total row */}
+                  <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
+                    <span className="font-medium text-gray-700">
+                      {order.items.length} item{order.items.length !== 1 ? 's' : ''} •{' '}
+                      {order.items.reduce((s, i) => s + i.quantity, 0)} unit{order.items.reduce((s, i) => s + i.quantity, 0) !== 1 ? 's' : ''}
+                    </span>
+                    <span className="font-bold text-amber-700 text-lg">Total: ₹{order.total.toFixed(2)}</span>
+                  </div>
                 </div>
 
+                {/* Shipping */}
                 <div className="border-t pt-4">
-                  <h4 className="font-medium mb-2">Shipping Address</h4>
+                  <h4 className="font-medium mb-2 text-gray-800">Shipping Address</h4>
                   <p className="text-sm text-gray-700">{order.customerInfo.address}</p>
                   <p className="text-sm text-gray-700">
                     {order.customerInfo.city}, {order.customerInfo.state} {order.customerInfo.zipCode}
@@ -442,23 +390,29 @@ export function AdminOrders() {
                 </div>
 
                 {order.trackingNumber && (
-                  <div className="bg-blue-50 rounded-lg p-3 mb-4">
+                  <div className="bg-blue-50 rounded-lg p-3 mt-4">
                     <p className="text-sm text-blue-900">
                       <strong>Tracking Number:</strong> {order.trackingNumber}
+                      {order.trackingUrl && (
+                        <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer" className="ml-3 text-blue-600 underline text-xs">
+                          Track
+                        </a>
+                      )}
                     </p>
                   </div>
                 )}
 
+                {/* Update / Delete buttons */}
                 {selectedOrder?.orderId === order.orderId ? (
                   <div className="border-t pt-4 mt-4">
                     <h4 className="font-medium mb-3">Update Order</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                       <div>
                         <Label htmlFor={`status-${order.orderId}`}>Status</Label>
                         <select
                           id={`status-${order.orderId}`}
                           value={status}
-                          onChange={(e) => setStatus(e.target.value)}
+                          onChange={e => setStatus(e.target.value)}
                           className="w-full px-3 py-2 border rounded-md"
                         >
                           <option value="">Select status</option>
@@ -473,34 +427,26 @@ export function AdminOrders() {
                         <Input
                           id={`tracking-${order.orderId}`}
                           value={trackingNumber}
-                          onChange={(e) => setTrackingNumber(e.target.value)}
+                          onChange={e => setTrackingNumber(e.target.value)}
                           placeholder="Enter tracking number"
                         />
                       </div>
                       <div>
-                        <Label htmlFor={`tracking-url-${order.orderId}`}>Tracking URL</Label>
+                        <Label htmlFor={`turl-${order.orderId}`}>Tracking URL</Label>
                         <Input
-                          id={`tracking-url-${order.orderId}`}
+                          id={`turl-${order.orderId}`}
                           value={trackingUrl}
-                          onChange={(e) => setTrackingUrl(e.target.value)}
-                          placeholder="Enter tracking URL"
+                          onChange={e => setTrackingUrl(e.target.value)}
+                          placeholder="https://..."
                         />
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button
-                        onClick={() => handleUpdateOrder(order.orderId)}
-                        className="bg-amber-700 hover:bg-amber-800"
-                      >
+                      <Button onClick={() => handleUpdateOrder(order.orderId)} className="bg-amber-700 hover:bg-amber-800">
                         Save Changes
                       </Button>
                       <Button
-                        onClick={() => {
-                          setSelectedOrder(null);
-                          setTrackingNumber('');
-                          setTrackingUrl('');
-                          setStatus('');
-                        }}
+                        onClick={() => { setSelectedOrder(null); setTrackingNumber(''); setTrackingUrl(''); setStatus(''); }}
                         variant="outline"
                       >
                         Cancel
@@ -508,23 +454,17 @@ export function AdminOrders() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 mt-4">
                     <Button
-                      onClick={() => {
-                        setSelectedOrder(order);
-                        setStatus(order.status);
-                        setTrackingNumber(order.trackingNumber || '');
-                        setTrackingUrl(order.trackingUrl || '');
-                      }}
+                      onClick={() => { setSelectedOrder(order); setStatus(order.status); setTrackingNumber(order.trackingNumber || ''); setTrackingUrl(order.trackingUrl || ''); }}
                       variant="outline"
-                      className="mt-4"
                     >
                       Update Order
                     </Button>
                     <Button
                       onClick={() => handleDeleteOrder(order.orderId)}
                       variant="outline"
-                      className="mt-4 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete

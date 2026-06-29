@@ -5,12 +5,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
-import { Package, Upload, X, Plus, ArrowLeft, Palette } from 'lucide-react';
-
-interface SizeStock {
-  size: string;
-  quantity: number;
-}
+import { Package, Upload, X, Plus, ArrowLeft } from 'lucide-react';
 
 export function AdminAddProduct() {
   const navigate = useNavigate();
@@ -20,55 +15,51 @@ export function AdminAddProduct() {
     price: '',
     originalPrice: '',
     category: 'T-Shirts',
+    sizes: [] as string[],
     badge: '',
     mainImage: '',
     galleryImages: [''],
   });
 
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const [sizeStocks, setSizeStocks] = useState<Record<string, number>>({});
-  const [colors, setColors] = useState<string[]>(['']);
-
-  const categories = ['Dresses', 'Shirts', 'T-Shirts', 'Outerwear', 'Accessories', 'Bottoms', 'Traditional', 'Sarees', 'Raincoat'];
+  const categories = ['Dresses', 'Shirts', 'T-Shirts', 'Outerwear', 'Accessories', 'Bottoms', 'Traditional', 'Sarees','Raincoat'];
   const allSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
   const badges = ['', 'NEW', 'SALE', 'TRENDING', 'HOT'];
 
-  // ── Size toggle + stock ──────────────────────────────────────────────────
   const handleSizeToggle = (size: string) => {
-    if (selectedSizes.includes(size)) {
-      setSelectedSizes(prev => prev.filter(s => s !== size));
-      setSizeStocks(prev => {
-        const next = { ...prev };
-        delete next[size];
-        return next;
+    if (formData.sizes.includes(size)) {
+      setFormData({
+        ...formData,
+        sizes: formData.sizes.filter(s => s !== size),
       });
     } else {
-      setSelectedSizes(prev => [...prev, size]);
-      setSizeStocks(prev => ({ ...prev, [size]: 0 }));
+      setFormData({
+        ...formData,
+        sizes: [...formData.sizes, size],
+      });
     }
   };
 
-  const handleSizeQtyChange = (size: string, qty: number) => {
-    setSizeStocks(prev => ({ ...prev, [size]: Math.max(0, qty) }));
+  const addGalleryImage = () => {
+    setFormData({
+      ...formData,
+      galleryImages: [...formData.galleryImages, ''],
+    });
   };
 
-  // ── Colors ───────────────────────────────────────────────────────────────
-  const addColor = () => setColors(prev => [...prev, '']);
-  const removeColor = (i: number) => setColors(prev => prev.filter((_, idx) => idx !== i));
-  const updateColor = (i: number, val: string) => {
-    const next = [...colors];
-    next[i] = val;
-    setColors(next);
+  const removeGalleryImage = (index: number) => {
+    setFormData({
+      ...formData,
+      galleryImages: formData.galleryImages.filter((_, i) => i !== index),
+    });
   };
 
-  // ── Gallery images ────────────────────────────────────────────────────────
-  const addGalleryImage = () => setFormData(f => ({ ...f, galleryImages: [...f.galleryImages, ''] }));
-  const removeGalleryImage = (i: number) =>
-    setFormData(f => ({ ...f, galleryImages: f.galleryImages.filter((_, idx) => idx !== i) }));
-  const updateGalleryImage = (i: number, val: string) => {
-    const next = [...formData.galleryImages];
-    next[i] = val;
-    setFormData(f => ({ ...f, galleryImages: next }));
+  const updateGalleryImage = (index: number, value: string) => {
+    const newImages = [...formData.galleryImages];
+    newImages[index] = value;
+    setFormData({
+      ...formData,
+      galleryImages: newImages,
+    });
   };
 
   const generateProductCode = () => {
@@ -77,53 +68,47 @@ export function AdminAddProduct() {
     return `${timestamp}-${random}`;
   };
 
-  // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validation
     if (!formData.name || !formData.description || !formData.price || !formData.mainImage) {
       toast.error('Please fill in all required fields');
       return;
     }
-    if (selectedSizes.length === 0) {
+
+    if (formData.sizes.length === 0) {
       toast.error('Please select at least one size');
       return;
     }
-    // Ensure all selected sizes have a quantity > 0
-    const missingQty = selectedSizes.filter(s => !sizeStocks[s] || sizeStocks[s] <= 0);
-    if (missingQty.length > 0) {
-      toast.error(`Please enter stock quantity for: ${missingQty.join(', ')}`);
-      return;
-    }
 
-    const productId = generateProductCode();
+    // Generate product code
+    const productCode = generateProductCode();
+
+    // Filter out empty gallery images
     const validGalleryImages = [formData.mainImage, ...formData.galleryImages.filter(img => img.trim() !== '')];
-    const validColors = colors.map(c => c.trim()).filter(Boolean);
 
-    // Build sizeStock array
-    const sizeStockArr = selectedSizes.map(s => ({ size: s, quantity: sizeStocks[s] ?? 0 }));
-    const totalStock = sizeStockArr.reduce((sum, s) => sum + s.quantity, 0);
-
-    const newProduct: Record<string, unknown> = {
-      id: productId,
+    // Create product object
+    const newProduct = {
+      id: productCode,
       name: formData.name,
       description: formData.description,
       price: parseFloat(formData.price),
-      ...(formData.originalPrice ? { originalPrice: parseFloat(formData.originalPrice) } : {}),
+      originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : undefined,
       image: formData.mainImage,
       images: validGalleryImages,
       category: formData.category,
-      sizes: selectedSizes,
-      ...(validColors.length > 0 ? { colors: validColors } : {}),
+      sizes: formData.sizes,
       inStock: true,
-      stock: totalStock,
-      sizeStock: sizeStockArr,
       featured: false,
-      ...(formData.badge ? { badge: formData.badge } : {}),
+      badge: formData.badge || undefined,
     };
 
-    const productCode = JSON.stringify(newProduct, null, 2);
-    navigator.clipboard.writeText(productCode);
+    // Generate the code to copy
+    const productCode_str = JSON.stringify(newProduct, null, 2);
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(productCode_str);
 
     toast.success('Product code copied to clipboard!', {
       description: 'Paste this into /src/app/data/products.ts in the products array',
@@ -131,7 +116,10 @@ export function AdminAddProduct() {
     });
 
     console.log('=== NEW PRODUCT CODE ===');
-    console.log(productCode + ',');
+    console.log('Copy this and add it to /src/app/data/products.ts:');
+    console.log('');
+    console.log(productCode_str + ',');
+    console.log('');
     console.log('========================');
   };
 
@@ -139,11 +127,20 @@ export function AdminAddProduct() {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <Button variant="ghost" onClick={() => navigate('/admin/dashboard')} className="mb-4">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/admin/dashboard')}
+            className="mb-4"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
           </Button>
+
           <div className="flex items-center gap-4">
             <div className="bg-gradient-to-br from-orange-500 to-amber-500 p-4 rounded-2xl">
               <Package className="w-8 h-8 text-white" />
@@ -165,11 +162,11 @@ export function AdminAddProduct() {
           <h3 className="text-lg font-bold text-blue-900 mb-2">📝 How This Works</h3>
           <ol className="space-y-2 text-blue-800 text-sm">
             <li><strong>1.</strong> Fill in all product details below</li>
-            <li><strong>2.</strong> Select sizes and enter stock quantity per size</li>
-            <li><strong>3.</strong> Optionally add available colors</li>
-            <li><strong>4.</strong> Add image URLs (upload to Imgur.com first)</li>
-            <li><strong>5.</strong> Click "Generate Product Code" — code is copied to clipboard</li>
-            <li><strong>6.</strong> Paste into <code className="bg-blue-200 px-1 rounded">/src/app/data/products.ts</code></li>
+            <li><strong>2.</strong> Upload your product images to Imgur.com or another image host</li>
+            <li><strong>3.</strong> Paste the image URLs in the image fields</li>
+            <li><strong>4.</strong> Click "Generate Product Code"</li>
+            <li><strong>5.</strong> The code will be copied to your clipboard automatically</li>
+            <li><strong>6.</strong> Paste it into <code className="bg-blue-200 px-1 rounded">/src/app/data/products.ts</code></li>
           </ol>
         </motion.div>
 
@@ -180,10 +177,9 @@ export function AdminAddProduct() {
           transition={{ delay: 0.2 }}
           className="bg-white rounded-2xl shadow-lg border-2 border-gray-200 p-8"
         >
-          <form onSubmit={handleSubmit} className="space-y-8">
-
-            {/* ── Basic Info ───────────────────────────────────── */}
-            <section className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Basic Info */}
+            <div className="space-y-4">
               <h3 className="text-xl font-bold text-gray-900 border-b-2 border-orange-500 pb-2">
                 Basic Information
               </h3>
@@ -193,7 +189,7 @@ export function AdminAddProduct() {
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Red Cotton Kurta"
                   required
                 />
@@ -204,7 +200,7 @@ export function AdminAddProduct() {
                 <textarea
                   id="description"
                   value={formData.description}
-                  onChange={e => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Detailed product description..."
                   className="w-full min-h-[100px] p-3 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none"
                   required
@@ -219,19 +215,20 @@ export function AdminAddProduct() {
                     type="number"
                     step="0.01"
                     value={formData.price}
-                    onChange={e => setFormData({ ...formData, price: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                     placeholder="999"
                     required
                   />
                 </div>
+
                 <div>
-                  <Label htmlFor="originalPrice">Original Price (₹) — Optional</Label>
+                  <Label htmlFor="originalPrice">Original Price (₹) - Optional</Label>
                   <Input
                     id="originalPrice"
                     type="number"
                     step="0.01"
                     value={formData.originalPrice}
-                    onChange={e => setFormData({ ...formData, originalPrice: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
                     placeholder="1499"
                   />
                   <p className="text-xs text-gray-500 mt-1">For showing discounts (strike-through)</p>
@@ -244,123 +241,70 @@ export function AdminAddProduct() {
                   <select
                     id="category"
                     value={formData.category}
-                    onChange={e => setFormData({ ...formData, category: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none"
                     required
                   >
-                    {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
                   </select>
                 </div>
+
                 <div>
-                  <Label htmlFor="badge">Badge — Optional</Label>
+                  <Label htmlFor="badge">Badge - Optional</Label>
                   <select
                     id="badge"
                     value={formData.badge}
-                    onChange={e => setFormData({ ...formData, badge: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
                     className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none"
                   >
-                    {badges.map(b => <option key={b} value={b}>{b || 'None'}</option>)}
+                    {badges.map(badge => (
+                      <option key={badge} value={badge}>{badge || 'None'}</option>
+                    ))}
                   </select>
                 </div>
               </div>
-            </section>
+            </div>
 
-            {/* ── Sizes + Per-size Stock ───────────────────────── */}
-            <section className="space-y-4">
+            {/* Sizes */}
+            <div className="space-y-4">
               <h3 className="text-xl font-bold text-gray-900 border-b-2 border-orange-500 pb-2">
-                Sizes & Stock Quantity *
+                Available Sizes *
               </h3>
-              <p className="text-sm text-gray-500">Select a size to enable it, then enter how many units are available for that size.</p>
-
-              <div className="space-y-3">
-                {allSizes.map(size => {
-                  const selected = selectedSizes.includes(size);
-                  return (
-                    <div key={size} className="flex items-center gap-4">
-                      <button
-                        type="button"
-                        onClick={() => handleSizeToggle(size)}
-                        className={`w-16 py-2 rounded-lg font-semibold text-sm transition-all flex-shrink-0 ${
-                          selected
-                            ? 'bg-orange-500 text-white shadow-md scale-105'
-                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                      {selected && (
-                        <div className="flex items-center gap-2 flex-1">
-                          <Label className="text-sm text-gray-600 whitespace-nowrap">Stock qty:</Label>
-                          <Input
-                            type="number"
-                            min={0}
-                            value={sizeStocks[size] ?? 0}
-                            onChange={e => handleSizeQtyChange(size, parseInt(e.target.value) || 0)}
-                            className="w-28"
-                            placeholder="0"
-                          />
-                          <span className="text-xs text-gray-400">units</span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+              <div className="flex flex-wrap gap-3">
+                {allSizes.map(size => (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => handleSizeToggle(size)}
+                    className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                      formData.sizes.includes(size)
+                        ? 'bg-orange-500 text-white shadow-lg scale-105'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
               </div>
+            </div>
 
-              {selectedSizes.length > 0 && (
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                  <p className="text-sm font-semibold text-orange-800">
-                    Total stock: {selectedSizes.reduce((sum, s) => sum + (sizeStocks[s] || 0), 0)} units
-                    across {selectedSizes.length} size{selectedSizes.length > 1 ? 's' : ''}
-                  </p>
-                </div>
-              )}
-            </section>
-
-            {/* ── Colors ──────────────────────────────────────── */}
-            <section className="space-y-4">
-              <h3 className="text-xl font-bold text-gray-900 border-b-2 border-orange-500 pb-2">
-                <span className="flex items-center gap-2">
-                  <Palette className="w-5 h-5 text-orange-500" />
-                  Available Colors — Optional
-                </span>
-              </h3>
-              <p className="text-sm text-gray-500">Add color names if the product comes in multiple colors (e.g. Red, Blue, Black).</p>
-
-              {colors.map((color, i) => (
-                <div key={i} className="flex gap-2 items-center">
-                  <Input
-                    value={color}
-                    onChange={e => updateColor(i, e.target.value)}
-                    placeholder={`Color ${i + 1} (e.g. Navy Blue)`}
-                  />
-                  {colors.length > 1 && (
-                    <Button type="button" variant="ghost" onClick={() => removeColor(i)} className="flex-shrink-0">
-                      <X className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-
-              <Button type="button" variant="outline" onClick={addColor} className="w-full">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Another Color
-              </Button>
-            </section>
-
-            {/* ── Images ──────────────────────────────────────── */}
-            <section className="space-y-4">
+            {/* Images */}
+            <div className="space-y-4">
               <h3 className="text-xl font-bold text-gray-900 border-b-2 border-orange-500 pb-2">
                 Product Images *
               </h3>
 
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                <p className="text-sm text-amber-900 font-semibold">📸 How to get image URLs:</p>
+                <p className="text-sm text-amber-900">
+                  <strong>📸 How to get image URLs:</strong>
+                </p>
                 <ol className="text-sm text-amber-800 mt-2 space-y-1">
                   <li>1. Go to <a href="https://imgur.com" target="_blank" rel="noopener noreferrer" className="underline font-bold">Imgur.com</a></li>
                   <li>2. Click "New post" and upload your image</li>
                   <li>3. Right-click on the uploaded image → "Copy image address"</li>
-                  <li>4. Paste the URL below</li>
+                  <li>4. Paste the URL in the fields below</li>
                 </ol>
               </div>
 
@@ -369,7 +313,7 @@ export function AdminAddProduct() {
                 <Input
                   id="mainImage"
                   value={formData.mainImage}
-                  onChange={e => setFormData({ ...formData, mainImage: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, mainImage: e.target.value })}
                   placeholder="https://i.imgur.com/abc123.jpg"
                   required
                 />
@@ -379,7 +323,9 @@ export function AdminAddProduct() {
                       src={formData.mainImage}
                       alt="Preview"
                       className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200"
-                      onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
                     />
                   </div>
                 )}
@@ -387,29 +333,39 @@ export function AdminAddProduct() {
 
               <div>
                 <Label>Gallery Images (Additional Views)</Label>
-                <p className="text-xs text-gray-500 mb-3">Add up to 4–5 images to show different angles. These will appear in the slideshow on the product page.</p>
-
-                {formData.galleryImages.map((image, i) => (
-                  <div key={i} className="flex gap-2 mb-3">
+                <p className="text-xs text-gray-500 mb-3">Add multiple images to show different angles</p>
+                
+                {formData.galleryImages.map((image, index) => (
+                  <div key={index} className="flex gap-2 mb-3">
                     <Input
                       value={image}
-                      onChange={e => updateGalleryImage(i, e.target.value)}
-                      placeholder={`Image ${i + 2} URL (optional)`}
+                      onChange={(e) => updateGalleryImage(index, e.target.value)}
+                      placeholder={`Image ${index + 2} URL (optional)`}
                     />
-                    <Button type="button" variant="ghost" onClick={() => removeGalleryImage(i)} className="flex-shrink-0">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => removeGalleryImage(index)}
+                      className="flex-shrink-0"
+                    >
                       <X className="w-4 h-4" />
                     </Button>
                   </div>
                 ))}
 
-                <Button type="button" variant="outline" onClick={addGalleryImage} className="w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addGalleryImage}
+                  className="w-full"
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Add More Images
                 </Button>
               </div>
-            </section>
+            </div>
 
-            {/* ── Submit ──────────────────────────────────────── */}
+            {/* Submit */}
             <div className="pt-6 border-t-2 border-gray-200">
               <Button
                 type="submit"
@@ -425,7 +381,7 @@ export function AdminAddProduct() {
           </form>
         </motion.div>
 
-        {/* Next Steps */}
+        {/* Instructions */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -435,11 +391,12 @@ export function AdminAddProduct() {
           <h3 className="text-lg font-bold text-gray-900 mb-3">📋 Next Steps After Generating Code:</h3>
           <ol className="space-y-2 text-gray-700">
             <li><strong>1.</strong> The product code is now in your clipboard</li>
-            <li><strong>2.</strong> Open <code className="bg-gray-200 px-2 py-1 rounded">/src/app/data/products.ts</code></li>
+            <li><strong>2.</strong> Open the file: <code className="bg-gray-200 px-2 py-1 rounded">/src/app/data/products.ts</code></li>
             <li><strong>3.</strong> Find the <code className="bg-gray-200 px-2 py-1 rounded">export const products: Product[] = [</code> line</li>
             <li><strong>4.</strong> Scroll to the end of the products array (before the <code className="bg-gray-200 px-2 py-1 rounded">];</code>)</li>
-            <li><strong>5.</strong> Paste your product code there (add a comma after the previous product)</li>
-            <li><strong>6.</strong> Save the file — your product appears instantly!</li>
+            <li><strong>5.</strong> Paste your product code there</li>
+            <li><strong>6.</strong> Make sure there's a comma after the previous product</li>
+            <li><strong>7.</strong> Save the file - your product will appear instantly!</li>
           </ol>
         </motion.div>
       </div>

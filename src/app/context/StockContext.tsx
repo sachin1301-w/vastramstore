@@ -2,84 +2,66 @@ import React, { createContext, useState, useContext, useEffect, ReactNode } from
 import { projectId, publicAnonKey } from '../../../utils/supabase/info';
 import { products } from '../data/products';
 
-interface SizeStock {
-  size: string;
-  quantity: number;
-}
-
 interface StockContextType {
   stock: Record<string, number>;
-  sizeStock: Record<string, SizeStock[]>;
   loading: boolean;
   getStock: (productId: string) => number;
-  getStockForSize: (productId: string, size: string) => number;
   refreshStock: () => Promise<void>;
 }
 
 export const StockContext = createContext<StockContextType | undefined>(undefined);
 
-const buildFallbackStock = (): { stock: Record<string, number>; sizeStock: Record<string, SizeStock[]> } => {
-  const stock: Record<string, number> = {};
-  const sizeStock: Record<string, SizeStock[]> = {};
-
-  products.forEach(p => {
-    // Total stock — use sizeStock sum if available, otherwise p.stock
-    if (p.sizeStock && p.sizeStock.length > 0) {
-      stock[p.id] = p.sizeStock.reduce((sum, s) => sum + s.quantity, 0);
-      sizeStock[p.id] = p.sizeStock.map(s => ({ size: s.size, quantity: s.quantity }));
-    } else if (p.stock !== undefined) {
-      stock[p.id] = p.stock;
-      // Distribute evenly across sizes if no per-size data
-      if (p.sizes.length > 0) {
-        const perSize = Math.floor(p.stock / p.sizes.length);
-        sizeStock[p.id] = p.sizes.map(s => ({ size: s, quantity: perSize }));
-      }
-    }
-  });
-
-  return { stock, sizeStock };
-};
-
 export const StockProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [stock, setStock] = useState<Record<string, number>>({});
-  const [sizeStock, setSizeStock] = useState<Record<string, SizeStock[]>>({});
   const [loading, setLoading] = useState(true);
-
-  const applyFallback = () => {
-    const { stock: s, sizeStock: ss } = buildFallbackStock();
-    setStock(s);
-    setSizeStock(ss);
-  };
 
   const fetchStock = async () => {
     try {
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-e222e178/stock`,
-        { headers: { Authorization: `Bearer ${publicAnonKey}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${publicAnonKey}`,
+          },
+        }
       );
 
       if (!response.ok) {
-        console.warn('Stock fetch failed:', response.status);
-        applyFallback();
+        console.warn('Stock fetch failed with status:', response.status);
+        // Use fallback stock from products.ts
+        const fallbackStock: Record<string, number> = {};
+        products.forEach(p => {
+          if (p.stock !== undefined) {
+            fallbackStock[p.id] = p.stock;
+          }
+        });
+        setStock(fallbackStock);
         return;
       }
 
       const data = await response.json();
       if (data.success && data.stock) {
         setStock(data.stock);
-        // If backend returns per-size stock use it, otherwise derive from products
-        if (data.sizeStock) {
-          setSizeStock(data.sizeStock);
-        } else {
-          const { sizeStock: ss } = buildFallbackStock();
-          setSizeStock(ss);
-        }
       } else {
-        applyFallback();
+        // Use fallback stock from products.ts
+        const fallbackStock: Record<string, number> = {};
+        products.forEach(p => {
+          if (p.stock !== undefined) {
+            fallbackStock[p.id] = p.stock;
+          }
+        });
+        setStock(fallbackStock);
       }
     } catch (error) {
-      console.warn('Error fetching stock, using fallback:', error);
-      applyFallback();
+      console.warn('Error fetching stock, using fallback values:', error);
+      // Use fallback stock from products.ts
+      const fallbackStock: Record<string, number> = {};
+      products.forEach(p => {
+        if (p.stock !== undefined) {
+          fallbackStock[p.id] = p.stock;
+        }
+      });
+      setStock(fallbackStock);
     } finally {
       setLoading(false);
     }
@@ -100,16 +82,18 @@ export const StockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       );
 
       if (!response.ok) {
-        console.warn('Stock sync failed:', response.status);
+        console.warn('Stock sync failed with status:', response.status);
+        // Still try to fetch existing stock
         await fetchStock();
         return;
       }
 
       const data = await response.json();
-      console.log('Stock synced:', data.message || 'Done');
+      console.log('Stock synced successfully:', data.message || 'Done');
       await fetchStock();
     } catch (error) {
-      console.warn('Error syncing stock:', error);
+      console.warn('Error syncing stock, continuing with fallback:', error);
+      // Still try to fetch stock or use fallback
       await fetchStock();
     }
   };
@@ -118,52 +102,41 @@ export const StockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     await fetchStock();
   };
 
-  // Total stock for a product
   const getStock = (productId: string): number => {
-    if (stock[productId] !== undefined) return stock[productId];
+    // Return the stock from state, or fallback to the product's initial stock value
+    if (stock[productId] !== undefined) {
+      return stock[productId];
+    }
+
+    // Fallback to product's initial stock value
     const product = products.find(p => p.id === productId);
-    if (product?.sizeStock) return product.sizeStock.reduce((sum, s) => sum + s.quantity, 0);
     return product?.stock ?? 0;
-  };
-
-  // Stock for a specific size
-  const getStockForSize = (productId: string, size: string): number => {
-    // 1. Check in-memory sizeStock (from server or derived)
-    const perSize = sizeStock[productId];
-    if (perSize) {
-      const entry = perSize.find(s => s.size === size);
-      if (entry !== undefined) return entry.quantity;
-    }
-
-    // 2. Fallback to product definition
-    const product = products.find(p => p.id === productId);
-    if (product?.sizeStock) {
-      const entry = product.sizeStock.find(s => s.size === size);
-      if (entry) return entry.quantity;
-    }
-
-    // 3. Last resort: distribute total evenly
-    if (product?.stock && product.sizes.length > 0) {
-      return Math.floor(product.stock / product.sizes.length);
-    }
-    return 0;
   };
 
   useEffect(() => {
     const init = async () => {
       try {
+        // Try to sync stock from products.ts to backend
         await syncStock();
       } catch (error) {
-        console.warn('Stock init failed, using fallback:', error);
-        applyFallback();
+        console.warn('Stock initialization failed, using fallback values:', error);
+        // Use fallback stock from products.ts
+        const fallbackStock: Record<string, number> = {};
+        products.forEach(p => {
+          if (p.stock !== undefined) {
+            fallbackStock[p.id] = p.stock;
+          }
+        });
+        setStock(fallbackStock);
         setLoading(false);
       }
     };
+
     init();
   }, []);
 
   return (
-    <StockContext.Provider value={{ stock, sizeStock, loading, getStock, getStockForSize, refreshStock }}>
+    <StockContext.Provider value={{ stock, loading, getStock, refreshStock }}>
       {children}
     </StockContext.Provider>
   );
@@ -171,6 +144,8 @@ export const StockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
 export const useStock = () => {
   const context = useContext(StockContext);
-  if (context === undefined) throw new Error('useStock must be used within a StockProvider');
+  if (context === undefined) {
+    throw new Error('useStock must be used within a StockProvider');
+  }
   return context;
 };

@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { products } from '../data/products';
 import { useCart } from '../context/CartContext';
@@ -18,11 +18,23 @@ export function ProductDetail() {
   const stockContext = useContext(StockContext);
   const navigate = useNavigate();
   const [selectedSize, setSelectedSize] = useState<string>('');
+  const [selectedImage, setSelectedImage] = useState<string>('');
+
+  // Update selected image when product changes
+  useEffect(() => {
+    if (product?.image) {
+      setSelectedImage(product.image);
+    }
+  }, [product?.id, product?.image]);
 
   // Use context stock if available, otherwise fall back to product's initial stock
-  const stock = product
+  const totalStock = product
     ? (stockContext ? stockContext.getStock(product.id) : (product.stock ?? 10))
     : 0;
+
+  // Per-size stock: use sizeStock if available and a size is selected
+  const sizeStock = (selectedSize && product?.sizeStock?.[selectedSize]) ?? null;
+  const stock = sizeStock !== null ? sizeStock : totalStock;
 
   if (!product) {
     return (
@@ -84,9 +96,10 @@ export function ProductDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
           <div>
+            {/* Main Image */}
             <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
               <ImageWithFallback
-                src={product.image}
+                src={selectedImage}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
@@ -96,6 +109,29 @@ export function ProductDetail() {
                 </Badge>
               )}
             </div>
+
+            {/* Thumbnail Gallery */}
+            {product.images && product.images.length > 1 && (
+              <div className="grid grid-cols-4 gap-3">
+                {product.images.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImage(image)}
+                    className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 transition-all hover:border-amber-700 ${
+                      selectedImage === image
+                        ? 'border-amber-700 ring-2 ring-amber-700'
+                        : 'border-gray-200'
+                    }`}
+                  >
+                    <ImageWithFallback
+                      src={image}
+                      alt={`${product.name} view ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Product Info */}
@@ -124,19 +160,29 @@ export function ProductDetail() {
                   Select Size
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {product.sizes.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 border rounded-md transition-colors ${
-                        selectedSize === size
-                          ? 'bg-amber-700 text-white border-amber-700'
-                          : 'border-gray-300 hover:border-amber-700'
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
+                  {product.sizes.map((size) => {
+                    const qty = product.sizeStock?.[size];
+                    const outOfStock = qty !== undefined && qty <= 0;
+                    return (
+                      <button
+                        key={size}
+                        onClick={() => !outOfStock && setSelectedSize(size)}
+                        disabled={outOfStock}
+                        className={`px-4 py-2 border rounded-md transition-colors relative ${
+                          outOfStock
+                            ? 'border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50'
+                            : selectedSize === size
+                            ? 'bg-amber-700 text-white border-amber-700'
+                            : 'border-gray-300 hover:border-amber-700'
+                        }`}
+                      >
+                        {size}
+                        {qty !== undefined && !outOfStock && (
+                          <span className="block text-xs opacity-60">{qty} left</span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -145,13 +191,17 @@ export function ProductDetail() {
             <div className="mb-6">
               {stock > 0 ? (
                 <div>
-                  <p className="text-green-600 font-medium">In Stock: {stock} units available</p>
+                  <p className="text-green-600 font-medium">
+                    In Stock: {stock} {selectedSize ? `available in ${selectedSize}` : 'units available'}
+                  </p>
                   {stock <= 5 && (
-                    <p className="text-orange-600 text-sm mt-1">Only {stock} left - Order soon!</p>
+                    <p className="text-orange-600 text-sm mt-1">Only {stock} left — Order soon!</p>
                   )}
                 </div>
               ) : (
-                <p className="text-red-600 font-medium">Out of Stock</p>
+                <p className="text-red-600 font-medium">
+                  {selectedSize ? `${selectedSize} is out of stock` : 'Out of Stock'}
+                </p>
               )}
             </div>
 

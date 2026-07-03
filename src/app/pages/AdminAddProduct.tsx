@@ -16,8 +16,6 @@ export function AdminAddProduct() {
     originalPrice: '',
     category: 'T-Shirts',
     sizeStock: {} as Record<string, number>,
-    colors: [] as string[],
-    colorInput: '',
     badge: '',
     mainImage: '',
     galleryImages: [''],
@@ -26,17 +24,6 @@ export function AdminAddProduct() {
   const categories = ['Dresses', 'Shirts', 'T-Shirts', 'Outerwear', 'Accessories', 'Bottoms', 'Traditional', 'Sarees'];
   const allSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
   const badges = ['', 'NEW', 'SALE', 'TRENDING', 'HOT'];
-
-  const handleAddColor = () => {
-    const color = formData.colorInput.trim();
-    if (color && !formData.colors.includes(color)) {
-      setFormData({ ...formData, colors: [...formData.colors, color], colorInput: '' });
-    }
-  };
-
-  const handleRemoveColor = (color: string) => {
-    setFormData({ ...formData, colors: formData.colors.filter(c => c !== color) });
-  };
 
   const handleSizeToggle = (size: string) => {
     const updated = { ...formData.sizeStock };
@@ -119,7 +106,6 @@ export function AdminAddProduct() {
       category: formData.category,
       sizes: Object.keys(formData.sizeStock),
       sizeStock: formData.sizeStock,
-      colors: formData.colors.length > 0 ? formData.colors : undefined,
       inStock: true,
       stock: Object.values(formData.sizeStock).reduce((a, b) => a + b, 0),
       featured: false,
@@ -348,40 +334,6 @@ export function AdminAddProduct() {
                       />
                       <p className="text-xs text-gray-500 text-center mt-1">qty in stock</p>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Colors */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold text-gray-900 border-b-2 border-orange-500 pb-2">
-                Available Colours <span className="text-sm font-normal text-gray-500">(Optional)</span>
-              </h3>
-              <div className="flex gap-2">
-                <Input
-                  value={formData.colorInput}
-                  onChange={(e) => setFormData({ ...formData, colorInput: e.target.value })}
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddColor(); } }}
-                  placeholder="e.g., Red, Blue, Dark Green..."
-                  className="flex-1"
-                />
-                <Button type="button" onClick={handleAddColor} variant="outline" className="flex-shrink-0">
-                  <Plus className="w-4 h-4 mr-1" /> Add
-                </Button>
-              </div>
-              {formData.colors.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {formData.colors.map(color => (
-                    <span
-                      key={color}
-                      className="flex items-center gap-1 bg-orange-100 text-orange-800 px-3 py-1.5 rounded-full text-sm font-medium"
-                    >
-                      {color}
-                      <button type="button" onClick={() => handleRemoveColor(color)} className="hover:text-red-600 ml-1">
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
                   ))}
                 </div>
               )}

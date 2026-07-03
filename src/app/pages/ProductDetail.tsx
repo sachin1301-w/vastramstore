@@ -27,13 +27,17 @@ export function ProductDetail() {
     }
   }, [product?.id, product?.image]);
 
-  // Use context stock if available, otherwise fall back to product's initial stock
+  // If product has sizeStock, derive total from it; otherwise use context/product.stock
   const totalStock = product
-    ? (stockContext ? stockContext.getStock(product.id) : (product.stock ?? 10))
+    ? (product.sizeStock && Object.keys(product.sizeStock).length > 0
+        ? Object.values(product.sizeStock).reduce((a, b) => a + b, 0)
+        : (stockContext ? stockContext.getStock(product.id) : (product.stock ?? 10)))
     : 0;
 
   // Per-size stock: use sizeStock if available and a size is selected
-  const sizeStock = (selectedSize && product?.sizeStock?.[selectedSize]) ?? null;
+  const sizeStock = (selectedSize && product?.sizeStock?.[selectedSize] !== undefined)
+    ? product.sizeStock![selectedSize]
+    : null;
   const stock = sizeStock !== null ? sizeStock : totalStock;
 
   if (!product) {

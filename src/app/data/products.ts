@@ -179,3 +179,4 @@ export const categories = [
   'Bottoms',
   'Raincoat',
 ];
+export const getAllProducts = () => products;

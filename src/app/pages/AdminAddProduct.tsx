@@ -15,28 +15,47 @@ export function AdminAddProduct() {
     price: '',
     originalPrice: '',
     category: 'T-Shirts',
-    sizes: [] as string[],
+    sizeStock: {} as Record<string, number>,
+    colors: [] as string[],
+    colorInput: '',
     badge: '',
     mainImage: '',
     galleryImages: [''],
   });
 
-  const categories = ['Dresses', 'Shirts', 'T-Shirts', 'Outerwear', 'Accessories', 'Bottoms', 'Traditional', 'Sarees','Raincoat'];
+  const categories = ['Dresses', 'Shirts', 'T-Shirts', 'Outerwear', 'Accessories', 'Bottoms', 'Traditional', 'Sarees'];
   const allSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
   const badges = ['', 'NEW', 'SALE', 'TRENDING', 'HOT'];
 
-  const handleSizeToggle = (size: string) => {
-    if (formData.sizes.includes(size)) {
-      setFormData({
-        ...formData,
-        sizes: formData.sizes.filter(s => s !== size),
-      });
-    } else {
-      setFormData({
-        ...formData,
-        sizes: [...formData.sizes, size],
-      });
+  const handleAddColor = () => {
+    const color = formData.colorInput.trim();
+    if (color && !formData.colors.includes(color)) {
+      setFormData({ ...formData, colors: [...formData.colors, color], colorInput: '' });
     }
+  };
+
+  const handleRemoveColor = (color: string) => {
+    setFormData({ ...formData, colors: formData.colors.filter(c => c !== color) });
+  };
+
+  const handleSizeToggle = (size: string) => {
+    const updated = { ...formData.sizeStock };
+    if (size in updated) {
+      delete updated[size];
+    } else {
+      updated[size] = 1;
+    }
+    setFormData({ ...formData, sizeStock: updated });
+  };
+
+  const handleSizeQty = (size: string, qty: number) => {
+    const updated = { ...formData.sizeStock };
+    if (qty <= 0) {
+      delete updated[size];
+    } else {
+      updated[size] = qty;
+    }
+    setFormData({ ...formData, sizeStock: updated });
   };
 
   const addGalleryImage = () => {
@@ -68,7 +87,7 @@ export function AdminAddProduct() {
     return `${timestamp}-${random}`;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validation
@@ -77,8 +96,8 @@ export function AdminAddProduct() {
       return;
     }
 
-    if (formData.sizes.length === 0) {
-      toast.error('Please select at least one size');
+    if (Object.keys(formData.sizeStock).length === 0) {
+      toast.error('Please select at least one size and set its quantity');
       return;
     }
 
@@ -98,22 +117,47 @@ export function AdminAddProduct() {
       image: formData.mainImage,
       images: validGalleryImages,
       category: formData.category,
-      sizes: formData.sizes,
+      sizes: Object.keys(formData.sizeStock),
+      sizeStock: formData.sizeStock,
+      colors: formData.colors.length > 0 ? formData.colors : undefined,
       inStock: true,
+      stock: Object.values(formData.sizeStock).reduce((a, b) => a + b, 0),
       featured: false,
       badge: formData.badge || undefined,
     };
 
     // Generate the code to copy
     const productCode_str = JSON.stringify(newProduct, null, 2);
-    
-    // Copy to clipboard
-    navigator.clipboard.writeText(productCode_str);
 
-    toast.success('Product code copied to clipboard!', {
-      description: 'Paste this into /src/app/data/products.ts in the products array',
-      duration: 8000,
-    });
+    // Copy to clipboard with fallback
+    try {
+      await navigator.clipboard.writeText(productCode_str);
+      toast.success('Product code copied to clipboard!', {
+        description: 'Paste this into /src/app/data/products.ts in the products array',
+        duration: 8000,
+      });
+    } catch (error) {
+      // Fallback: Use textarea for manual copy when clipboard is blocked
+      const textarea = document.createElement('textarea');
+      textarea.value = productCode_str;
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-999999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      try {
+        document.execCommand('copy');
+        toast.success('Product code copied!', {
+          description: 'Paste this into /src/app/data/products.ts in the products array',
+          duration: 8000,
+        });
+      } catch (execError) {
+        // Final fallback: show in alert for manual copy
+        alert('Copy this product code:\n\n' + productCode_str);
+      }
+
+      document.body.removeChild(textarea);
+    }
 
     console.log('=== NEW PRODUCT CODE ===');
     console.log('Copy this and add it to /src/app/data/products.ts:');
@@ -270,8 +314,9 @@ export function AdminAddProduct() {
             {/* Sizes */}
             <div className="space-y-4">
               <h3 className="text-xl font-bold text-gray-900 border-b-2 border-orange-500 pb-2">
-                Available Sizes *
+                Sizes & Stock Quantity *
               </h3>
+              <p className="text-sm text-gray-500">Click a size to add it, then enter stock quantity. Setting quantity to 0 removes that size.</p>
               <div className="flex flex-wrap gap-3">
                 {allSizes.map(size => (
                   <button
@@ -279,7 +324,7 @@ export function AdminAddProduct() {
                     type="button"
                     onClick={() => handleSizeToggle(size)}
                     className={`px-6 py-3 rounded-lg font-semibold transition-all ${
-                      formData.sizes.includes(size)
+                      size in formData.sizeStock
                         ? 'bg-orange-500 text-white shadow-lg scale-105'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
@@ -288,6 +333,58 @@ export function AdminAddProduct() {
                   </button>
                 ))}
               </div>
+
+              {Object.keys(formData.sizeStock).length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4">
+                  {allSizes.filter(s => s in formData.sizeStock).map(size => (
+                    <div key={size} className="bg-orange-50 border-2 border-orange-200 rounded-xl p-3">
+                      <p className="text-sm font-bold text-orange-800 mb-2 text-center">{size}</p>
+                      <input
+                        type="number"
+                        min="0"
+                        value={formData.sizeStock[size]}
+                        onChange={(e) => handleSizeQty(size, parseInt(e.target.value) || 0)}
+                        className="w-full text-center border-2 border-orange-300 rounded-lg p-2 font-semibold focus:border-orange-500 focus:outline-none"
+                      />
+                      <p className="text-xs text-gray-500 text-center mt-1">qty in stock</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Colors */}
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold text-gray-900 border-b-2 border-orange-500 pb-2">
+                Available Colours <span className="text-sm font-normal text-gray-500">(Optional)</span>
+              </h3>
+              <div className="flex gap-2">
+                <Input
+                  value={formData.colorInput}
+                  onChange={(e) => setFormData({ ...formData, colorInput: e.target.value })}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddColor(); } }}
+                  placeholder="e.g., Red, Blue, Dark Green..."
+                  className="flex-1"
+                />
+                <Button type="button" onClick={handleAddColor} variant="outline" className="flex-shrink-0">
+                  <Plus className="w-4 h-4 mr-1" /> Add
+                </Button>
+              </div>
+              {formData.colors.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {formData.colors.map(color => (
+                    <span
+                      key={color}
+                      className="flex items-center gap-1 bg-orange-100 text-orange-800 px-3 py-1.5 rounded-full text-sm font-medium"
+                    >
+                      {color}
+                      <button type="button" onClick={() => handleRemoveColor(color)} className="hover:text-red-600 ml-1">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Images */}

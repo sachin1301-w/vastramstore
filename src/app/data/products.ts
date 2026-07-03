@@ -188,8 +188,7 @@ export const products: Product[] = [
     "XXL": 16
   },
   "colors": [
-    "Black",
-    "Navy Blue"
+    "Black"
   ],
   "inStock": true,
   "stock": 27,

@@ -157,6 +157,23 @@ export function ProductDetail() {
               <p className="text-gray-600 leading-relaxed">{product.description}</p>
             </div>
 
+            {/* Colours */}
+            {product.colors && product.colors.length > 0 && (
+              <div className="mb-6">
+                <p className="font-medium mb-2">Available Colours</p>
+                <div className="flex flex-wrap gap-2">
+                  {product.colors.map((color) => (
+                    <span
+                      key={color}
+                      className="px-3 py-1 rounded-full border border-gray-300 text-sm text-gray-700 bg-gray-50"
+                    >
+                      {color}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Size Selection */}
             {product.sizes.length > 0 && (
               <div className="mb-6">

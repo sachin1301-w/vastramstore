@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { products } from '../data/products';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -804,23 +805,30 @@ export function AdminDashboard() {
               <div>
                 <h3 className="font-semibold text-lg mb-3">Items Purchased</h3>
                 <div className="space-y-2">
-                  {viewOrderDetails.items.map((item, index) => (
-                    <div key={index} className="bg-amber-50 rounded-lg p-4 flex justify-between items-center">
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-900">{item.name}</p>
-                        <p className="text-sm text-gray-600">
-                          {item.size && `Size: ${item.size} • `}
-                          Unit Price: ₹{item.price.toFixed(2)} • Quantity: {item.quantity}
-                        </p>
-                        {item.id && (
-                          <p className="text-xs text-gray-500 mt-1 font-mono">
-                            Product ID: {item.id}
+                  {viewOrderDetails.items.map((item, index) => {
+                    const product = products.find(p => p.id === item.id);
+                    const imgSrc = item.image || product?.image || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=80&h=80&fit=crop';
+                    return (
+                      <div key={index} className="bg-amber-50 rounded-lg p-4 flex items-center gap-4">
+                        <img
+                          src={imgSrc}
+                          alt={item.name}
+                          className="w-20 h-20 object-cover rounded-lg flex-shrink-0 border border-amber-200"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=80&h=80&fit=crop';
+                          }}
+                        />
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-900">{item.name}</p>
+                          <p className="text-sm text-gray-600">
+                            {item.size && `Size: ${item.size} • `}
+                            Unit Price: ₹{item.price.toFixed(2)} • Quantity: {item.quantity}
                           </p>
-                        )}
+                        </div>
+                        <p className="font-bold text-amber-700 text-lg">₹{(item.price * item.quantity).toFixed(2)}</p>
                       </div>
-                      <p className="font-bold text-amber-700 text-lg">₹{(item.price * item.quantity).toFixed(2)}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 <div className="border-t-2 mt-4 pt-4 flex justify-between items-center">
                   <span className="text-xl font-bold">Total</span>

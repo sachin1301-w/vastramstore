@@ -197,6 +197,30 @@ export const products: Product[] = [
   "badge": "HOT"
 },
   {
+  "id": "1783106903587-66yciz0",
+  "name": "Raincoat",
+  "description": "ECO",
+  "price": 799,
+  "originalPrice": 1499,
+  "image": "https://cdn.phototourl.com/free/2026-07-03-58bcb99a-aa8e-4fa7-ad32-c254e51108f5.jpg",
+  "images": [
+    "https://cdn.phototourl.com/free/2026-07-03-58bcb99a-aa8e-4fa7-ad32-c254e51108f5.jpg",
+    "https://cdn.phototourl.com/free/2026-07-03-ee552363-7d29-420b-80b3-e32b53389b45.jpg"
+  ],
+  "category": "T-Shirts",
+  "sizes": [
+    "M",
+    "L"
+  ],
+  "sizeStock": {
+    "M": 10,
+    "L": 10
+  },
+  "inStock": true,
+  "stock": 20,
+  "featured": false
+},
+  {
   "id": "1781593590486-cfvcc8y",
   "name": "Zeel Raincoat ",
   "description": "JS201 (Orange-blue )",

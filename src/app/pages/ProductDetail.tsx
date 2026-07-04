@@ -18,6 +18,7 @@ export function ProductDetail() {
   const stockContext = useContext(StockContext);
   const navigate = useNavigate();
   const [selectedSize, setSelectedSize] = useState<string>('');
+  const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedImage, setSelectedImage] = useState<string>('');
 
   // Update selected image when product changes
@@ -27,18 +28,32 @@ export function ProductDetail() {
     }
   }, [product?.id, product?.image]);
 
-  // If product has sizeStock, derive total from it; otherwise use context/product.stock
+  // Sizes available for selected colour (from colorSizeStock), or all sizes
+  const activeSizeStock: Record<string, number> | null =
+    selectedColor && product?.colorSizeStock?.[selectedColor]
+      ? product.colorSizeStock[selectedColor]
+      : product?.sizeStock ?? null;
+
+  const availableSizes: string[] = product
+    ? (selectedColor && product.colorSizeStock?.[selectedColor]
+        ? Object.keys(product.colorSizeStock[selectedColor])
+        : product.sizes)
+    : [];
+
+  // Total stock: sum across colorSizeStock if present, else sizeStock, else product.stock
   const totalStock = product
-    ? (product.sizeStock && Object.keys(product.sizeStock).length > 0
+    ? (product.colorSizeStock && Object.keys(product.colorSizeStock).length > 0
+        ? Object.values(product.colorSizeStock).reduce((sum, sizes) => sum + Object.values(sizes).reduce((a, b) => a + b, 0), 0)
+        : product.sizeStock && Object.keys(product.sizeStock).length > 0
         ? Object.values(product.sizeStock).reduce((a, b) => a + b, 0)
         : (stockContext ? stockContext.getStock(product.id) : (product.stock ?? 10)))
     : 0;
 
-  // Per-size stock: use sizeStock if available and a size is selected
-  const sizeStock = (selectedSize && product?.sizeStock?.[selectedSize] !== undefined)
-    ? product.sizeStock![selectedSize]
+  // Per-size stock for the selected size (within selected colour if applicable)
+  const currentSizeQty = selectedSize && activeSizeStock?.[selectedSize] !== undefined
+    ? activeSizeStock[selectedSize]
     : null;
-  const stock = sizeStock !== null ? sizeStock : totalStock;
+  const stock = currentSizeQty !== null ? currentSizeQty : totalStock;
 
   if (!product) {
     return (
@@ -77,12 +92,18 @@ export function ProductDetail() {
       return;
     }
 
+    if (product.colors && product.colors.length > 0 && !selectedColor) {
+      toast.error('Please select a colour');
+      return;
+    }
+
     addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
       image: product.image,
       size: selectedSize || undefined,
+      color: selectedColor || undefined,
     });
 
     toast.success('Added to cart!');
@@ -157,32 +178,57 @@ export function ProductDetail() {
               <p className="text-gray-600 leading-relaxed">{product.description}</p>
             </div>
 
-            {/* Colours */}
+            {/* Colour Selection */}
             {product.colors && product.colors.length > 0 && (
               <div className="mb-6">
-                <p className="font-medium mb-2">Available Colours</p>
+                <label className="block mb-3 font-medium">
+                  Select Colour
+                  {selectedColor && (
+                    <span className="ml-2 text-amber-700 font-semibold">— {selectedColor}</span>
+                  )}
+                </label>
                 <div className="flex flex-wrap gap-2">
-                  {product.colors.map((color) => (
-                    <span
-                      key={color}
-                      className="px-3 py-1 rounded-full border border-gray-300 text-sm text-gray-700 bg-gray-50"
-                    >
-                      {color}
-                    </span>
-                  ))}
+                  {product.colors.map((color) => {
+                    const colorSizes = product.colorSizeStock?.[color];
+                    const colorTotal = colorSizes
+                      ? Object.values(colorSizes).reduce((a, b) => a + b, 0)
+                      : null;
+                    const outOfStock = colorTotal !== null && colorTotal <= 0;
+                    return (
+                      <button
+                        key={color}
+                        type="button"
+                        disabled={outOfStock}
+                        onClick={() => { if (!outOfStock) { setSelectedColor(color); setSelectedSize(''); } }}
+                        className={`px-4 py-2 border rounded-md transition-colors text-sm font-medium ${
+                          outOfStock
+                            ? 'border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50'
+                            : selectedColor === color
+                            ? 'bg-amber-700 text-white border-amber-700'
+                            : 'border-gray-300 text-gray-700 hover:border-amber-700'
+                        }`}
+                      >
+                        {color}
+                        {outOfStock && <span className="block text-xs">Out of stock</span>}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {/* Size Selection */}
-            {product.sizes.length > 0 && (
+            {availableSizes.length > 0 && (
               <div className="mb-6">
                 <label className="block mb-3">
                   Select Size
+                  {product.colors && product.colors.length > 0 && !selectedColor && (
+                    <span className="ml-2 text-sm text-orange-600">(select a colour first)</span>
+                  )}
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {product.sizes.map((size) => {
-                    const qty = product.sizeStock?.[size];
+                  {availableSizes.map((size) => {
+                    const qty = activeSizeStock?.[size];
                     const outOfStock = qty !== undefined && qty <= 0;
                     return (
                       <button

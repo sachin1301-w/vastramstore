@@ -183,7 +183,7 @@ export const products: Product[] = [
   "images": [
     "https://cdn.phototourl.com/free/2026-07-04-3ecfff76-9879-4887-8d94-63c435a00869.jpg"
   ],
-  "category": "T-Shirts",
+  "category": "Raincoat",
   "colors": [
     "BLACK",
     "NAVY BLUE",

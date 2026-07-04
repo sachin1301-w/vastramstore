@@ -103,57 +103,8 @@ export const products: Product[] = [
   "featured": false,
   "badge": "NEW"
 },
-  {
-  "id": "1783105044149-4nsw66q",
-  "name": "Raincoat",
-  "description": "JS-201",
-  "price": 1289,
-  "originalPrice": 1500,
-  "image": "https://cdn.phototourl.com/free/2026-07-03-ac42903b-18ee-45ef-a52b-88ae1775575c.jpg",
-  "images": [
-    "https://cdn.phototourl.com/free/2026-07-03-ac42903b-18ee-45ef-a52b-88ae1775575c.jpg",
-    "https://cdn.phototourl.com/free/2026-07-03-97c06b78-2ae0-4c3f-938b-765df8cc26f9.jpg"
-  ],
-  "category": "T-Shirts",
-  "sizes": [
-    "L",
-    "XL",
-    "XXL"
-  ],
-  "inStock": true,
-    "stock":20,
-  "featured": false,
-  "badge": "TRENDING"
-},
-  {
-  "id": "1783105923797-spds100",
-  "name": "Raincoat",
-  "description": "JS-201",
-  "price": 1289,
-  "originalPrice": 1500,
-  "image": "https://cdn.phototourl.com/free/2026-07-03-ac42903b-18ee-45ef-a52b-88ae1775575c.jpg",
-  "images": [
-    "https://cdn.phototourl.com/free/2026-07-03-ac42903b-18ee-45ef-a52b-88ae1775575c.jpg"
-  ],
-  "category": "T-Shirts",
-  "sizes": [
-    "L",
-    "XL",
-    "XXL"
-  ],
-  "sizeStock": {
-    "L": 10,
-    "XL": 1,
-    "XXL": 16
-  },
-  "colors": [
-    "Black"
-  ],
-  "inStock": true,
-  "stock": 27,
-  "featured": false,
-  "badge": "HOT"
-},
+  
+ 
   {
   "id": "1783106903587-66yciz0",
   "name": "Raincoat",

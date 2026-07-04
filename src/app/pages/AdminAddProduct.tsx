@@ -9,15 +9,16 @@ import { Package, Upload, X, Plus, ArrowLeft } from 'lucide-react';
 
 export function AdminAddProduct() {
   const navigate = useNavigate();
+  // colorSizeStock: { "Red": { "XS": 5, "M": 10 }, "Blue": { "S": 8 } }
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
     originalPrice: '',
     category: 'T-Shirts',
-    sizeStock: {} as Record<string, number>,
-    colors: [] as string[],
+    colorSizeStock: {} as Record<string, Record<string, number>>,
     colorInput: '',
+    activeColor: '',
     badge: '',
     mainImage: '',
     galleryImages: [''],
@@ -29,33 +30,45 @@ export function AdminAddProduct() {
 
   const handleAddColor = () => {
     const color = formData.colorInput.trim();
-    if (color && !formData.colors.includes(color)) {
-      setFormData({ ...formData, colors: [...formData.colors, color], colorInput: '' });
+    if (color && !(color in formData.colorSizeStock)) {
+      setFormData({
+        ...formData,
+        colorSizeStock: { ...formData.colorSizeStock, [color]: {} },
+        colorInput: '',
+        activeColor: color,
+      });
     }
   };
 
   const handleRemoveColor = (color: string) => {
-    setFormData({ ...formData, colors: formData.colors.filter(c => c !== color) });
+    const updated = { ...formData.colorSizeStock };
+    delete updated[color];
+    const colors = Object.keys(updated);
+    setFormData({ ...formData, colorSizeStock: updated, activeColor: colors[colors.length - 1] || '' });
   };
 
-  const handleSizeToggle = (size: string) => {
-    const updated = { ...formData.sizeStock };
-    if (size in updated) {
-      delete updated[size];
+  const handleSizeToggleForColor = (color: string, size: string) => {
+    const updated = { ...formData.colorSizeStock };
+    const colorSizes = { ...updated[color] };
+    if (size in colorSizes) {
+      delete colorSizes[size];
     } else {
-      updated[size] = 1;
+      colorSizes[size] = 1;
     }
-    setFormData({ ...formData, sizeStock: updated });
+    updated[color] = colorSizes;
+    setFormData({ ...formData, colorSizeStock: updated });
   };
 
-  const handleSizeQty = (size: string, qty: number) => {
-    const updated = { ...formData.sizeStock };
+  const handleSizeQtyForColor = (color: string, size: string, qty: number) => {
+    const updated = { ...formData.colorSizeStock };
+    const colorSizes = { ...updated[color] };
     if (qty <= 0) {
-      delete updated[size];
+      delete colorSizes[size];
     } else {
-      updated[size] = qty;
+      colorSizes[size] = qty;
     }
-    setFormData({ ...formData, sizeStock: updated });
+    updated[color] = colorSizes;
+    setFormData({ ...formData, colorSizeStock: updated });
   };
 
   const addGalleryImage = () => {
@@ -96,8 +109,14 @@ export function AdminAddProduct() {
       return;
     }
 
-    if (Object.keys(formData.sizeStock).length === 0) {
-      toast.error('Please select at least one size and set its quantity');
+    const colors = Object.keys(formData.colorSizeStock);
+    if (colors.length === 0) {
+      toast.error('Please add at least one colour with sizes');
+      return;
+    }
+    const allSizesAcrossColors = [...new Set(colors.flatMap(c => Object.keys(formData.colorSizeStock[c])))];
+    if (allSizesAcrossColors.length === 0) {
+      toast.error('Please select at least one size for each colour');
       return;
     }
 
@@ -117,11 +136,11 @@ export function AdminAddProduct() {
       image: formData.mainImage,
       images: validGalleryImages,
       category: formData.category,
-      sizes: Object.keys(formData.sizeStock),
-      sizeStock: formData.sizeStock,
-      colors: formData.colors.length > 0 ? formData.colors : undefined,
+      colors: Object.keys(formData.colorSizeStock),
+      colorSizeStock: formData.colorSizeStock,
+      sizes: [...new Set(Object.values(formData.colorSizeStock).flatMap(s => Object.keys(s)))],
       inStock: true,
-      stock: Object.values(formData.sizeStock).reduce((a, b) => a + b, 0),
+      stock: Object.values(formData.colorSizeStock).reduce((sum, sizes) => sum + Object.values(sizes).reduce((a, b) => a + b, 0), 0),
       featured: false,
       badge: formData.badge || undefined,
     };
@@ -311,53 +330,14 @@ export function AdminAddProduct() {
               </div>
             </div>
 
-            {/* Sizes */}
+            {/* Colours & Sizes */}
             <div className="space-y-4">
               <h3 className="text-xl font-bold text-gray-900 border-b-2 border-orange-500 pb-2">
-                Sizes & Stock Quantity *
+                Colours & Sizes with Stock *
               </h3>
-              <p className="text-sm text-gray-500">Click a size to add it, then enter stock quantity. Setting quantity to 0 removes that size.</p>
-              <div className="flex flex-wrap gap-3">
-                {allSizes.map(size => (
-                  <button
-                    key={size}
-                    type="button"
-                    onClick={() => handleSizeToggle(size)}
-                    className={`px-6 py-3 rounded-lg font-semibold transition-all ${
-                      size in formData.sizeStock
-                        ? 'bg-orange-500 text-white shadow-lg scale-105'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
+              <p className="text-sm text-gray-500">Add each colour, then select sizes and set stock quantity per size for that colour.</p>
 
-              {Object.keys(formData.sizeStock).length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4">
-                  {allSizes.filter(s => s in formData.sizeStock).map(size => (
-                    <div key={size} className="bg-orange-50 border-2 border-orange-200 rounded-xl p-3">
-                      <p className="text-sm font-bold text-orange-800 mb-2 text-center">{size}</p>
-                      <input
-                        type="number"
-                        min="0"
-                        value={formData.sizeStock[size]}
-                        onChange={(e) => handleSizeQty(size, parseInt(e.target.value) || 0)}
-                        className="w-full text-center border-2 border-orange-300 rounded-lg p-2 font-semibold focus:border-orange-500 focus:outline-none"
-                      />
-                      <p className="text-xs text-gray-500 text-center mt-1">qty in stock</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Colors */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold text-gray-900 border-b-2 border-orange-500 pb-2">
-                Available Colours <span className="text-sm font-normal text-gray-500">(Optional)</span>
-              </h3>
+              {/* Add colour input */}
               <div className="flex gap-2">
                 <input
                   value={formData.colorInput}
@@ -367,22 +347,73 @@ export function AdminAddProduct() {
                   className="flex-1 p-3 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none"
                 />
                 <Button type="button" onClick={handleAddColor} variant="outline" className="flex-shrink-0">
-                  <Plus className="w-4 h-4 mr-1" /> Add
+                  <Plus className="w-4 h-4 mr-1" /> Add Colour
                 </Button>
               </div>
-              {formData.colors.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {formData.colors.map(color => (
-                    <span
-                      key={color}
-                      className="flex items-center gap-2 bg-orange-100 text-orange-800 px-3 py-1.5 rounded-full text-sm font-medium"
-                    >
-                      {color}
-                      <button type="button" onClick={() => handleRemoveColor(color)} className="hover:text-red-600">
-                        <X className="w-3 h-3" />
+
+              {/* Colour tabs */}
+              {Object.keys(formData.colorSizeStock).length > 0 && (
+                <div className="border-2 border-orange-200 rounded-xl overflow-hidden">
+                  {/* Tab headers */}
+                  <div className="flex flex-wrap border-b-2 border-orange-200 bg-orange-50">
+                    {Object.keys(formData.colorSizeStock).map(color => (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, activeColor: color })}
+                        className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold transition-colors ${
+                          formData.activeColor === color
+                            ? 'bg-orange-500 text-white'
+                            : 'text-orange-800 hover:bg-orange-100'
+                        }`}
+                      >
+                        {color}
+                        <span onClick={(e) => { e.stopPropagation(); handleRemoveColor(color); }} className="hover:text-red-300 cursor-pointer">
+                          <X className="w-3 h-3" />
+                        </span>
                       </button>
-                    </span>
-                  ))}
+                    ))}
+                  </div>
+
+                  {/* Active colour size grid */}
+                  {formData.activeColor && formData.colorSizeStock[formData.activeColor] !== undefined && (
+                    <div className="p-4 space-y-3">
+                      <p className="text-sm font-medium text-gray-700">Select sizes for <strong>{formData.activeColor}</strong> and set stock:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {allSizes.map(size => (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => handleSizeToggleForColor(formData.activeColor, size)}
+                            className={`px-5 py-2 rounded-lg font-semibold transition-all ${
+                              size in (formData.colorSizeStock[formData.activeColor] || {})
+                                ? 'bg-orange-500 text-white shadow scale-105'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            }`}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                      {Object.keys(formData.colorSizeStock[formData.activeColor] || {}).length > 0 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
+                          {allSizes.filter(s => s in (formData.colorSizeStock[formData.activeColor] || {})).map(size => (
+                            <div key={size} className="bg-orange-50 border-2 border-orange-200 rounded-xl p-3">
+                              <p className="text-sm font-bold text-orange-800 mb-2 text-center">{size}</p>
+                              <input
+                                type="number"
+                                min="0"
+                                value={formData.colorSizeStock[formData.activeColor][size]}
+                                onChange={(e) => handleSizeQtyForColor(formData.activeColor, size, parseInt(e.target.value) || 0)}
+                                className="w-full text-center border-2 border-orange-300 rounded-lg p-2 font-semibold focus:border-orange-500 focus:outline-none"
+                              />
+                              <p className="text-xs text-gray-500 text-center mt-1">qty</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

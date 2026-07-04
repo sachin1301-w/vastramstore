@@ -167,15 +167,17 @@ export const products: Product[] = [
   ],
   "category": "T-Shirts",
   "sizes": [
-    "M",
-    "L"
+    "L",
+    "XL",
+    "XXL"
   ],
   "sizeStock": {
-    "M": 10,
-    "L": 10
+    "L": 10,
+    "XL": 10,
+    "XXL":10
   },
   "inStock": true,
-  "stock": 20,
+  "stock": 30,
   "featured": false
 },
   {

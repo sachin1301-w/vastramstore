@@ -180,6 +180,49 @@ export const products: Product[] = [
   "featured": false
 },
   {
+  "id": "1783144017106-eqegmlu",
+  "name": "Raincoat",
+  "description": "JS-301",
+  "price": 1449,
+  "originalPrice": 1500,
+  "image": "https://cdn.phototourl.com/free/2026-07-04-4630a1c3-7636-452e-ac31-e49979fc0257.jpg",
+  "images": [
+    "https://cdn.phototourl.com/free/2026-07-04-4630a1c3-7636-452e-ac31-e49979fc0257.jpg"
+  ],
+  "category": "T-Shirts",
+  "colors": [
+    "MEHADI",
+    "BLUE",
+    "BLACK"
+  ],
+  "colorSizeStock": {
+    "MEHADI": {
+      "L": 10,
+      "XL": 15,
+      "XXL": 10
+    },
+    "BLUE": {
+      "L": 5,
+      "XL": 10,
+      "XXL": 12
+    },
+    "BLACK": {
+      "L": 10,
+      "XL": 14,
+      "XXL": 15
+    }
+  },
+  "sizes": [
+    "L",
+    "XL",
+    "XXL"
+  ],
+  "inStock": true,
+  "stock": 101,
+  "featured": false,
+  "badge": "TRENDING"
+},
+  {
   "id": "1781593590486-cfvcc8y",
   "name": "Zeel Raincoat ",
   "description": "JS201 (Orange-blue )",

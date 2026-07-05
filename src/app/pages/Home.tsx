@@ -26,38 +26,38 @@ export function Home() {
   };
 
   // Slideshow images
-  const slides = [
-    {
-      id: 1,
-      image: 'https://images.unsplash.com/photo-1757598079169-b8655dc3e933?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBldGhuaWMlMjBzdWl0JTIwc2Fsd2FyJTIwa2FtZWV6fGVufDF8fHx8MTc3Mzg0MTk5N3ww&ixlib=rb-4.1.0&q=80&w=1080',
-      title: 'KAASHVI JENIKA',
-      subtitle: 'Exclusive Red Ethnic Collection'
-    },
-    {
-      id: 2,
-      image: 'https://images.unsplash.com/photo-1739429945494-1d27f2ba95f2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbGVnYW50JTIwc2FyZWUlMjB3b21hbiUyMHBvcnRyYWl0fGVufDF8fHx8MTc3MzgyODkwNXww&ixlib=rb-4.1.0&q=80&w=1080',
-      title: 'Discover Your Style',
-      subtitle: 'Premium Ethnic Wear'
-    },
-    {
-      id: 3,
-      image: 'https://images.unsplash.com/photo-1760461804065-febded675ae2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZWF1dGlmdWwlMjBpbmRpYW4lMjBicmlkZSUyMGxlaGVuZ2F8ZW58MXx8fHwxNzczODI4OTA1fDA&ixlib=rb-4.1.0&q=80&w=1080',
-      title: 'Bridal Collection',
-      subtitle: 'Wedding & Festive Wear'
-    },
-    {
-      id: 4,
-      image: 'https://images.unsplash.com/photo-1664636404761-d3aa86169911?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdHlsaXNoJTIwa3VydGElMjBmYXNoaW9uJTIwbW9kZWx8ZW58MXx8fHwxNzczODI4OTA2fDA&ixlib=rb-4.1.0&q=80&w=1080',
-      title: 'Trendy Kurtas',
-      subtitle: 'Casual & Party Wear'
-    },
-    {
-      id: 5,
-      image: 'https://images.unsplash.com/photo-1654764746221-7bc58ef4dbad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cmFkaXRpb25hbCUyMGluZGlhbiUyMGRyZXNzJTIwYmVhdXRpZnVsfGVufDF8fHx8MTc3MzgyODkwNnww&ixlib=rb-4.1.0&q=80&w=1080',
-      title: 'Elegant Anarkalis',
-      subtitle: 'Traditional Elegance'
-    }
-  ];
+const slides = [
+  {
+    id: 1,
+    image: 'https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/e071e053021839.59253ea422f1a.jpg',
+    title: 'ZEEL Rainwear',
+    subtitle: 'Premium Monsoon Collection'
+  },
+  {
+    id: 2,
+    image: 'https://i.pinimg.com/736x/ff/8c/2c/ff8c2cc7c2c772f707c5e8445ee37a45.jpg',
+    title: 'KAASHVI JENIKA',
+    subtitle: 'Exclusive Collection'
+  },
+  {
+    id: 3,
+    image: 'https://zeelretail.com/cdn/shop/files/Zeel-Go-Hike-Black-_-Red-Rainsuit-JS508-Zeelretail-9210312.jpg?v=1716037748',
+    title: 'Go Hike Series',
+    subtitle: 'Premium Rainwear'
+  },
+  {
+    id: 4,
+    image: 'https://5.imimg.com/data5/SELLER/Default/2024/7/432157832/JP/TL/WG/8898423/zeel-raincoat-for-men-1000x1000.webp',
+    title: 'Men\'s Raincoat',
+    subtitle: 'All Weather Protection'
+  },
+  {
+    id: 5,
+    image: 'https://www.diamondcreation.in/wp-content/uploads/2020/06/Mens-Green-Reversible-Rainsuit-zeel-JS201-diamond-creation-6-510x680.jpg',
+    title: 'Reversible Rainsuit',
+    subtitle: 'Comfort & Style'
+  }
+];
 
   // Animation variants
   const fadeInUp = {

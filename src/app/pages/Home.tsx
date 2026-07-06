@@ -30,14 +30,14 @@ const slides = [
   {
     id: 1,
     image: 'https://cdn.corenexis.com/f/YrqTLA2mU1X.jpeg',
-    title: 'ZEEL Rainwear',
-    subtitle: 'Premium Monsoon Collection'
+    title: 'All Collection',
+    subtitle: 'Premium couple Collection'
   },
   {
     id: 2,
     image: 'https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/e071e053021839.59253ea422f1a.jpg',
-    title: 'Premium Rainwear',
-    subtitle: 'Built for Every Season'
+    title: 'ZEEL Raincoat',
+    subtitle: 'Sada Sukhee Rahoo'
   },
   {
     id: 3,

@@ -29,33 +29,27 @@ export function Home() {
 const slides = [
   {
     id: 1,
-    image: 'https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/e071e053021839.59253ea422f1a.jpg',
+    image: 'https://cdn.corenexis.com/f/YrqTLA2mU1X.jpeg',
     title: 'ZEEL Rainwear',
     subtitle: 'Premium Monsoon Collection'
   },
   {
     id: 2,
-    image: 'https://i.pinimg.com/736x/ff/8c/2c/ff8c2cc7c2c772f707c5e8445ee37a45.jpg',
-    title: 'KAASHVI JENIKA',
-    subtitle: 'Exclusive Collection'
+    image: 'https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/e071e053021839.59253ea422f1a.jpg',
+    title: 'Premium Rainwear',
+    subtitle: 'Built for Every Season'
   },
   {
     id: 3,
-    image: 'https://zeelretail.com/cdn/shop/files/Zeel-Go-Hike-Black-_-Red-Rainsuit-JS508-Zeelretail-9210312.jpg?v=1716037748',
-    title: 'Go Hike Series',
-    subtitle: 'Premium Rainwear'
+    image: 'https://i.pinimg.com/736x/ff/8c/2c/ff8c2cc7c2c772f707c5e8445ee37a45.jpg',
+    title: 'Stylish Collection',
+    subtitle: 'Comfort Meets Fashion'
   },
   {
     id: 4,
-    image: 'https://5.imimg.com/data5/SELLER/Default/2024/7/432157832/JP/TL/WG/8898423/zeel-raincoat-for-men-1000x1000.webp',
-    title: 'Men\'s Raincoat',
+    image: 'https://zeelretail.com/cdn/shop/files/Zeel-Go-Hike-Black-_-Red-Rainsuit-JS508-Zeelretail-9210312.jpg?v=1716037748',
+    title: "Men's Raincoat",
     subtitle: 'All Weather Protection'
-  },
-  {
-    id: 5,
-    image: 'https://www.diamondcreation.in/wp-content/uploads/2020/06/Mens-Green-Reversible-Rainsuit-zeel-JS201-diamond-creation-6-510x680.jpg',
-    title: 'Reversible Rainsuit',
-    subtitle: 'Comfort & Style'
   }
 ];
 

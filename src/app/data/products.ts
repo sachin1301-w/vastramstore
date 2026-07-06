@@ -363,6 +363,38 @@ export const products: Product[] = [
   "stock": 16,
   "featured": false,
   "badge": "TRENDING"
+},{
+  "id": "1783346782268-9f2ylpg",
+  "name": "Cotton Cord Set",
+  "description": "Free Shipping",
+  "price": 899,
+  "originalPrice": 1200,
+  "image": "https://cdn.corenexis.com/f/IQFpOrtiOPM.jpeg",
+  "images": [
+    "https://cdn.corenexis.com/f/IQFpOrtiOPM.jpeg"
+  ],
+  "category": "Dresses",
+  "colors": [
+    "maroon"
+  ],
+  "colorSizeStock": {
+    "maroon": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    }
+  },
+  "sizes": [
+    "M",
+    "L",
+    "XL",
+    "XXL"
+  ],
+  "inStock": true,
+  "stock": 4,
+  "featured": false,
+  "badge": "TRENDING"
 }
   
 ];

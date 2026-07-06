@@ -237,6 +237,36 @@ export const products: Product[] = [
    "stock": 40,
   "featured": false,
   "badge": "NEW"
+},{
+  "id": "1783345608775-lqd8cch",
+  "name": "Cotton one piece ",
+  "description": "Freee shipping",
+  "price": 750,
+  "originalPrice": 999,
+  "image": "https://cdn.corenexis.com/f/NX3gU1e3jiC.jpeg",
+  "images": [
+    "https://cdn.corenexis.com/f/NX3gU1e3jiC.jpeg"
+  ],
+  "category": "Outerwear",
+  "colors": [
+    "green"
+  ],
+  "colorSizeStock": {
+    "green": {
+      "L": 4,
+      "XL": 4,
+      "XXL": 4
+    }
+  },
+  "sizes": [
+    "L",
+    "XL",
+    "XXL"
+  ],
+  "inStock": true,
+  "stock": 12,
+  "featured": false,
+  "badge": "TRENDING"
 }
   
 ];

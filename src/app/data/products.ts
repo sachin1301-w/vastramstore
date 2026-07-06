@@ -299,6 +299,38 @@ export const products: Product[] = [
   "stock": 4,
   "featured": false,
   "badge": "TRENDING"
+},{
+  "id": "1783346132407-g2m6qxd",
+  "name": "Cotton one piece ",
+  "description": "Free Shipping",
+  "price": 750,
+  "originalPrice": 999,
+  "image": "https://cdn.corenexis.com/f/3KWsX61aut9.jpeg",
+  "images": [
+    "https://cdn.corenexis.com/f/3KWsX61aut9.jpeg"
+  ],
+  "category": "Outerwear",
+  "colors": [
+    "Navy-Blue"
+  ],
+  "colorSizeStock": {
+    "Navy-Blue": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    }
+  },
+  "sizes": [
+    "M",
+    "L",
+    "XL",
+    "XXL"
+  ],
+  "inStock": true,
+  "stock": 4,
+  "featured": false,
+  "badge": "TRENDING"
 }
   
 ];

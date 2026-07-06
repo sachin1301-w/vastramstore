@@ -347,10 +347,10 @@ export const products: Product[] = [
   ],
   "colorSizeStock": {
     "blue": {
-      "M": 4,
-      "L": 4,
-      "XL": 4,
-      "XXL": 4
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
     }
   },
   "sizes": [

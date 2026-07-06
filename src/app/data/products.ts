@@ -267,6 +267,38 @@ export const products: Product[] = [
   "stock": 12,
   "featured": false,
   "badge": "TRENDING"
+},{
+  "id": "1783345832034-tto16c1",
+  "name": "Cord SET",
+  "description": "Free Shipping",
+  "price": 999,
+  "originalPrice": 1250,
+  "image": "https://cdn.corenexis.com/f/JTT3DiMOr3y.jpeg",
+  "images": [
+    "https://cdn.corenexis.com/f/JTT3DiMOr3y.jpeg"
+  ],
+  "category": "Dresses",
+  "colors": [
+    "Orange"
+  ],
+  "colorSizeStock": {
+    "Orange": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    }
+  },
+  "sizes": [
+    "M",
+    "L",
+    "XL",
+    "XXL"
+  ],
+  "inStock": true,
+  "stock": 4,
+  "featured": false,
+  "badge": "TRENDING"
 }
   
 ];

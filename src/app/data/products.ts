@@ -39,8 +39,8 @@ export const products: Product[] = [
   "id": "1773907996913-cs2bybh",
   "name": "saree",
   "description": "children saree",
-  "price": 500,
-  "originalPrice": 500,
+  "price": 750,
+  "originalPrice": 999,
   "image": "https://juwtfhevkbfywawzzexn.supabase.co/storage/v1/object/public/make-e222e178-product-images/1773907996913-cs2bybh.jpeg",
   "images": [
     "https://juwtfhevkbfywawzzexn.supabase.co/storage/v1/object/public/make-e222e178-product-images/1773907996913-cs2bybh.jpeg"

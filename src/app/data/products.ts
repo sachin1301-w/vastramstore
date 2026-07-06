@@ -331,6 +331,38 @@ export const products: Product[] = [
   "stock": 4,
   "featured": false,
   "badge": "TRENDING"
+},{
+  "id": "1783346303250-iu7qaap",
+  "name": "Cotton Cord Set",
+  "description": "Free Shipping",
+  "price": 899,
+  "originalPrice": 1200,
+  "image": "https://cdn.corenexis.com/f/fLupJUaSqC8.jpeg",
+  "images": [
+    "https://cdn.corenexis.com/f/fLupJUaSqC8.jpeg"
+  ],
+  "category": "Dresses",
+  "colors": [
+    "blue"
+  ],
+  "colorSizeStock": {
+    "blue": {
+      "M": 4,
+      "L": 4,
+      "XL": 4,
+      "XXL": 4
+    }
+  },
+  "sizes": [
+    "M",
+    "L",
+    "XL",
+    "XXL"
+  ],
+  "inStock": true,
+  "stock": 16,
+  "featured": false,
+  "badge": "TRENDING"
 }
   
 ];

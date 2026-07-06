@@ -110,7 +110,7 @@ export const products: Product[] = [
   "name": "Raincoat",
   "description": "ECO",
   "price": 799,
-  "originalPrice": 1499,
+  "originalPrice": 899,
   "image": "https://cdn.phototourl.com/free/2026-07-03-58bcb99a-aa8e-4fa7-ad32-c254e51108f5.jpg",
   "images": [
     "https://cdn.phototourl.com/free/2026-07-03-58bcb99a-aa8e-4fa7-ad32-c254e51108f5.jpg"

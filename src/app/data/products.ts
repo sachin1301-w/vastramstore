@@ -395,6 +395,38 @@ export const products: Product[] = [
   "stock": 4,
   "featured": false,
   "badge": "TRENDING"
+},{
+  "id": "1783347400184-vfcsazu",
+  "name": "Short Kurti",
+  "description": "Fabric Khadi Cotton   \nFree Shipping",
+  "price": 550,
+  "originalPrice": 665,
+  "image": "https://cdn.corenexis.com/f/u2dN8vPTdoL.jpeg",
+  "images": [
+    "https://cdn.corenexis.com/f/u2dN8vPTdoL.jpeg"
+  ],
+  "category": "Outerwear",
+  "colors": [
+    "Purple"
+  ],
+  "colorSizeStock": {
+    "Purple": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    }
+  },
+  "sizes": [
+    "M",
+    "L",
+    "XL",
+    "XXL"
+  ],
+  "inStock": true,
+  "stock": 4,
+  "featured": false,
+  "badge": "TRENDING"
 }
   
 ];

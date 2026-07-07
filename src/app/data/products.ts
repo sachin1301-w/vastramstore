@@ -494,8 +494,8 @@ export const products: Product[] = [
 },{
   "id": "1783395890847-vv0wcal",
   "name": "Corean pant ",
-  "description": "Free shipping ",
-  "price": 1098.96,
+  "description": "Free shipping /n 4 colora  ",
+  "price": 1100,
   "originalPrice": 1375,
   "image": "https://cdn.corenexis.com/f/n7bKBFjynHo.jpeg",
   "images": [
@@ -505,7 +505,7 @@ export const products: Product[] = [
     "https://cdn.corenexis.com/f/Ri4SwGxi7l4.jpeg",
     "https://cdn.corenexis.com/f/Ri4SwGxi7l4.jpeg"
   ],
-  "category": "Outerwear",
+  "category": "Bottoms",
   "colors": [
     "white",
     "Black",

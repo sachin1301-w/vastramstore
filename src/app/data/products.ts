@@ -427,6 +427,70 @@ export const products: Product[] = [
   "stock": 4,
   "featured": false,
   "badge": "TRENDING"
+},{
+  "id": "1783394989892-tkuobz4",
+  "name": "Short Kurti",
+  "description": "Fabric Khadi Cotton   \nFree Shipping\ngreen",
+  "price": 550,
+  "originalPrice": 665,
+  "image": "https://cdn.corenexis.com/f/30WJlHbE3l2.jpeg",
+  "images": [
+    "https://cdn.corenexis.com/f/30WJlHbE3l2.jpeg"
+  ],
+  "category": "Outerwear",
+  "colors": [
+    "green"
+  ],
+  "colorSizeStock": {
+    "green": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    }
+  },
+  "sizes": [
+    "M",
+    "L",
+    "XL",
+    "XXL"
+  ],
+  "inStock": true,
+  "stock": 4,
+  "featured": false,
+  "badge": "TRENDING"
+},{
+  "id": "1783395088179-2pj04uo",
+  "name": "Short Kurti",
+  "description": "Fabric Khadi Cotton   \nFree Shipping\npink",
+  "price": 550,
+  "originalPrice": 665,
+  "image": "https://cdn.corenexis.com/f/T9AXtLjlXj6.jpeg",
+  "images": [
+    "https://cdn.corenexis.com/f/T9AXtLjlXj6.jpeg"
+  ],
+  "category": "Outerwear",
+  "colors": [
+    "pink"
+  ],
+  "colorSizeStock": {
+    "pink": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    }
+  },
+  "sizes": [
+    "M",
+    "L",
+    "XL",
+    "XXL"
+  ],
+  "inStock": true,
+  "stock": 4,
+  "featured": false,
+  "badge": "TRENDING"
 }
   
 ];

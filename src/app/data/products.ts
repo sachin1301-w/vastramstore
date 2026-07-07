@@ -491,6 +491,76 @@ export const products: Product[] = [
   "stock": 4,
   "featured": false,
   "badge": "TRENDING"
+},{
+  "id": "1783395890847-vv0wcal",
+  "name": "Corean pant ",
+  "description": "Free shipping ",
+  "price": 1098.96,
+  "originalPrice": 1375,
+  "image": "https://cdn.corenexis.com/f/n7bKBFjynHo.jpeg",
+  "images": [
+    "https://cdn.corenexis.com/f/n7bKBFjynHo.jpeg",
+    "https://cdn.corenexis.com/f/1DI4KndS68S.jpeg",
+    "https://cdn.corenexis.com/f/FV6DA5cqqbu.jpeg",
+    "https://cdn.corenexis.com/f/Ri4SwGxi7l4.jpeg",
+    "https://cdn.corenexis.com/f/Ri4SwGxi7l4.jpeg"
+  ],
+  "category": "Outerwear",
+  "colors": [
+    "white",
+    "Black",
+    "Brown",
+    "Grey",
+    "Rose pink"
+  ],
+  "colorSizeStock": {
+    "white": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "Black": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "Brown": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "Grey": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "Rose pink": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    }
+  },
+  "sizes": [
+    "S",
+    "M",
+    "L",
+    "XL",
+    "XXL"
+  ],
+  "inStock": true,
+  "stock": 25,
+  "featured": false,
+  "badge": "TRENDING"
 }
   
 ];
